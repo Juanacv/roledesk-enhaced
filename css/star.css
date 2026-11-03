@@ -1,9 +1,610 @@
+/* ==========================================================================
+   RoleDesk — Tablero Táctico D&D (Dark Fantasy Theme)
+   ========================================================================== */
+
+:root {
+    --bg-darkest: #0b0d13;
+    --bg-panel: #151924;
+    --bg-card: #1c2230;
+    --bg-input: #10141d;
+    --border-subtle: #2b3448;
+    --gold-primary: #d4af37;
+    --gold-light: #f3e5ab;
+    --gold-dark: #997a15;
+    --text-main: #e2e8f0;
+    --text-muted: #94a3b8;
+    --crimson: #dc2626;
+    --crimson-hover: #ef4444;
+    --azure: #0284c7;
+    --azure-hover: #38bdf8;
+    --emerald: #16a34a;
+    --purple: #7e22ce;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
+    background-color: var(--bg-darkest);
+    background-image: radial-gradient(circle at 50% 0%, #1e2536 0%, #0b0d13 75%);
+    color: var(--text-main);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    font-size: 13px;
+    display: flex;
+    flex-direction: column;
+}
+
+/* ==========================================================================
+   CABECERA Y BARRA DE HERRAMIENTAS SUPERIOR
+   ========================================================================== */
+
+.vtt-header {
+    background: linear-gradient(180deg, #1a202c 0%, #121620 100%);
+    border-bottom: 2px solid var(--gold-dark);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.65);
+    padding: 8px 18px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 14px;
+    z-index: 10;
+}
+
+.vtt-brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.brand-icon {
+    font-size: 28px;
+    filter: drop-shadow(0 2px 6px rgba(212, 175, 55, 0.5));
+}
+
+.vtt-brand h1 {
+    margin: 0;
+    font-family: 'Cinzel', Georgia, serif;
+    font-size: 21px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    color: var(--gold-primary);
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
+}
+
+.brand-subtitle {
+    display: block;
+    font-size: 11px;
+    color: var(--text-muted);
+    letter-spacing: 0.5px;
+}
+
+.vtt-toolbar {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.toolbar-group {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(11, 13, 19, 0.55);
+    border: 1px solid var(--border-subtle);
+    padding: 5px 10px;
+    border-radius: 8px;
+}
+
+.group-label {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.7px;
+    color: var(--gold-light);
+    opacity: 0.75;
+    margin-right: 4px;
+    font-weight: 600;
+}
+
+/* ==========================================================================
+   BOTONES E INPUTS
+   ========================================================================== */
+
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    padding: 6px 12px;
+    border-radius: 6px;
+    border: 1px solid transparent;
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    color: #fff;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
+}
+
+.btn:hover {
+    transform: translateY(-1px);
+    filter: brightness(1.12);
+}
+
+.btn:active {
+    transform: translateY(0);
+}
+
+.btn-sm {
+    padding: 4px 9px;
+    font-size: 11px;
+}
+
+.btn-attack {
+    background: linear-gradient(180deg, #ef4444 0%, #b91c1c 100%);
+    border-color: #f87171;
+}
+
+.btn-defense {
+    background: linear-gradient(180deg, #0284c7 0%, #0369a1 100%);
+    border-color: #38bdf8;
+}
+
+.btn-token {
+    background: linear-gradient(180deg, #16a34a 0%, #15803d 100%);
+    border-color: #4ade80;
+}
+
+.btn-magic {
+    background: linear-gradient(180deg, #9333ea 0%, #6b21a8 100%);
+    border-color: #c084fc;
+}
+
+.btn-gold {
+    background: linear-gradient(180deg, #d4af37 0%, #9a7b1c 100%);
+    border-color: #f3e5ab;
+    color: #0b0d13;
+    text-shadow: none;
+    font-weight: 700;
+}
+
+.btn-secondary {
+    background: #262f42;
+    border-color: #3b4761;
+    color: var(--text-main);
+}
+
+.btn-secondary.active {
+    background: #334155;
+    border-color: var(--gold-primary);
+    color: var(--gold-light);
+    box-shadow: 0 0 8px rgba(212, 175, 55, 0.35);
+}
+
+.btn-danger {
+    background: rgba(185, 28, 28, 0.25);
+    border-color: #991b1b;
+    color: #fca5a5;
+}
+
+.btn-danger:hover {
+    background: #b91c1c;
+    color: #fff;
+}
+
+.vtt-select,
+.vtt-input {
+    background-color: var(--bg-input);
+    color: var(--text-main);
+    border: 1px solid var(--border-subtle);
+    border-radius: 5px;
+    padding: 5px 8px;
+    font-size: 12px;
+    font-family: inherit;
+    outline: none;
+    transition: border-color 0.15s ease;
+}
+
+.vtt-select:focus,
+.vtt-input:focus {
+    border-color: var(--gold-primary);
+    box-shadow: 0 0 0 2px rgba(212, 175, 55, 0.2);
+}
+
+.input-sm {
+    width: 55px;
+    text-align: center;
+}
+
+.input-xs {
+    width: 46px;
+    text-align: center;
+}
+
+/* ==========================================================================
+   WORKSPACE: SIDEBAR + STAGE
+   ========================================================================== */
+
+.vtt-workspace {
+    display: flex;
+    flex: 1;
+    gap: 14px;
+    padding: 14px;
+    align-items: flex-start;
+}
+
+.vtt-sidebar {
+    width: 310px;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.vtt-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-subtle);
+    border-radius: 10px;
+    padding: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+.card-header-flex {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.card-header-flex .card-title {
+    margin-bottom: 0;
+}
+
+.card-title {
+    margin: 0 0 10px 0;
+    font-family: 'Cinzel', Georgia, serif;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--gold-primary);
+    border-bottom: 1px solid rgba(212, 175, 55, 0.25);
+    padding-bottom: 5px;
+    letter-spacing: 0.5px;
+}
+
+.form-row {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin-bottom: 8px;
+}
+
+.form-row:last-child {
+    margin-bottom: 0;
+}
+
+.form-row label {
+    font-size: 11px;
+    color: var(--text-muted);
+    font-weight: 500;
+}
+
+/* ==========================================================================
+   LANZADOR DE DADOS D&D
+   ========================================================================== */
+
+.dice-mod-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 6px;
+    margin-bottom: 8px;
+    font-size: 11px;
+    color: var(--text-muted);
+}
+
+.dice-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 6px;
+    margin-bottom: 8px;
+}
+
+.btn-die {
+    background: linear-gradient(145deg, #242c3d, #181e2b);
+    border: 1px solid #3b4761;
+    color: var(--gold-light);
+    font-family: 'Cinzel', Georgia, serif;
+    font-weight: 700;
+    font-size: 13px;
+    padding: 7px 4px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.btn-die:hover {
+    border-color: var(--gold-primary);
+    background: #2d374d;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(212, 175, 55, 0.25);
+}
+
+.btn-d20 {
+    grid-column: span 2;
+    background: linear-gradient(145deg, #7c2d12, #451a03);
+    border-color: #f97316;
+    color: #ffedd5;
+}
+
+.dice-result-banner {
+    background: var(--bg-input);
+    border: 1px solid var(--border-subtle);
+    border-radius: 6px;
+    padding: 8px 10px;
+    text-align: center;
+    font-size: 12px;
+    min-height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.dice-result-banner .crit-hit {
+    color: #4ade80;
+    font-weight: 700;
+}
+
+.dice-result-banner .crit-fail {
+    color: #f87171;
+    font-weight: 700;
+}
+
+/* ==========================================================================
+   RASTREADOR DE INICIATIVA Y HP
+   ========================================================================== */
+
+.badge-round {
+    background: rgba(212, 175, 55, 0.15);
+    border: 1px solid var(--gold-primary);
+    color: var(--gold-light);
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 7px;
+    border-radius: 12px;
+}
+
+.init-add-row {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 8px;
+}
+
+.init-add-row #init-name {
+    flex: 1;
+    min-width: 0;
+}
+
+.init-list {
+    list-style: none;
+    margin: 0 0 8px 0;
+    padding: 0;
+    max-height: 155px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.init-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: var(--bg-input);
+    border: 1px solid var(--border-subtle);
+    border-radius: 5px;
+    padding: 5px 8px;
+    font-size: 12px;
+    gap: 6px;
+}
+
+.init-item.active-turn {
+    border-color: var(--gold-primary);
+    background: rgba(212, 175, 55, 0.14);
+    box-shadow: inset 3px 0 0 var(--gold-primary);
+}
+
+.init-badge {
+    background: #262f42;
+    color: var(--gold-light);
+    font-weight: 700;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 11px;
+    min-width: 24px;
+    text-align: center;
+}
+
+.init-name-lbl {
+    flex: 1;
+    font-weight: 600;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.init-hp-controls {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+}
+
+.hp-pill {
+    color: #4ade80;
+    font-weight: 700;
+    font-size: 11px;
+    margin-right: 2px;
+}
+
+.hp-pill.dead {
+    color: #ef4444;
+    text-decoration: line-through;
+}
+
+.btn-hp {
+    background: #262f42;
+    border: 1px solid #3b4761;
+    color: #fff;
+    border-radius: 3px;
+    width: 18px;
+    height: 18px;
+    line-height: 14px;
+    font-size: 11px;
+    padding: 0;
+    cursor: pointer;
+}
+
+.btn-hp:hover {
+    background: #3b4761;
+}
+
+.init-actions {
+    display: flex;
+    justify-content: space-between;
+    gap: 6px;
+}
+
+/* ==========================================================================
+   SUBIDA DE ARCHIVOS Y CRÓNICA DE COMBATE
+   ========================================================================== */
+
+.upload-form {
+    margin-bottom: 10px;
+}
+
+.upload-form:last-child {
+    margin-bottom: 0;
+}
+
+.upload-form label {
+    display: block;
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-bottom: 4px;
+}
+
+.file-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.vtt-file {
+    font-size: 11px;
+    color: var(--text-muted);
+    width: 100%;
+}
+
+.combat-log {
+    background: var(--bg-input);
+    border: 1px solid var(--border-subtle);
+    border-radius: 6px;
+    padding: 8px;
+    height: 115px;
+    overflow-y: auto;
+    font-size: 11px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.log-entry {
+    color: var(--text-muted);
+    border-bottom: 1px dashed rgba(255, 255, 255, 0.06);
+    padding-bottom: 3px;
+    line-height: 1.35;
+}
+
+.log-entry b {
+    color: var(--gold-light);
+}
+
+/* ==========================================================================
+   ÁREA CENTRAL: TABLERO DEL DUNGEON Y ELEMENTOS SVG
+   ========================================================================== */
+
+.vtt-stage {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.stage-hint {
+    background: rgba(28, 34, 48, 0.85);
+    border: 1px solid var(--border-subtle);
+    color: var(--text-muted);
+    padding: 6px 14px;
+    border-radius: 20px;
+    margin-bottom: 10px;
+    font-size: 11.5px;
+}
+
+.stage-hint b {
+    color: var(--gold-light);
+}
+
+.canvas-wrapper {
+    width: 100%;
+    max-width: 1256px;
+    border: 3px solid var(--gold-dark);
+    border-radius: 8px;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.85), 0 0 0 1px rgba(243, 229, 171, 0.15);
+    background: #090b10;
+    line-height: 0;
+}
+
+#marco {
+    width: 100%;
+}
+
+#svg-edit {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 1250 / 975;
+    background-repeat: no-repeat;
+    background-size: 100% 100%;
+    background-position: center center;
+    display: block;
+}
+
+/* Estilo de los desplegables (<select>) incrustados dentro del SVG (<foreignObject>) */
+#svg-edit foreignObject select {
+    background: rgba(15, 20, 30, 0.92);
+    color: #f8fafc;
+    border: 1px solid var(--gold-primary);
+    border-radius: 4px;
+    font-size: 11px;
+    font-family: 'Inter', sans-serif;
+    padding: 1px 4px;
+    width: 100%;
+    height: 22px;
+    cursor: pointer;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.7);
+    outline: none;
+}
+
+/* Cursores interactivos de los controles del SVG */
 .point-handle {
     cursor: -webkit-grab;
     cursor: -moz-grab;
     cursor: -ms-grab;
     cursor: grab;
-
     touch-action: none;
 }
 
@@ -13,7 +614,8 @@
     cursor: -ms-grabbing;
     cursor: grabbing;
 }
+
 .point-rotation {
-    cursor: url("../images/rotate.png") 10 10, default;
+    cursor: url("../images/rotate.png") 10 10, crosshair;
     touch-action: none;
 }

@@ -1,50 +1,207 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 	<head>
 		<meta charset="utf-8" />
-		<title>Roledesk demo</title>
-		<meta name="description" content="A small demonstration of interact.js, a drag and drop, resize and multitouch gesture module for modern browsers (and IE8)" />
-		<meta name="author" content="Taye Adeyemi" />
+		<title>RoleDesk — Tablero Táctico D&amp;D</title>
+		<meta name="description" content="Tablero táctico virtual (VTT) para partidas de rol y Dungeons & Dragons con soporte SVG interactivo" />
+		<meta name="author" content="RoleDesk" />
+		<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 		<script type="text/javascript" src="js/interact.js"></script>
 		<script src="http://code.jquery.com/jquery-1.10.1.min.js"></script>
-		<script type="text/javascript" src="js/SVGCanvas.js"></script>
-		<script type="text/javascript" src="js/main.js"></script>
-		<link rel="stylesheet" href="css/star.css" type="text/css"/>
+		<script type="text/javascript" src="js/SVGCanvas.js?v=14"></script>
+		<script type="text/javascript" src="js/main.js?v=14"></script>
+		<link rel="stylesheet" href="css/star.css?v=14" type="text/css"/>
 	</head>
-	<body>		
-		<p><button id="add-line" type="button">Ataque</button><button id="add-rectangle" type="button">Defensa</button><button id="add-image" type="button">Personaje</button><button id="save-template" type="button">Salvar Plantilla</button><input type="text" id="name_template" value="" placeholder="Nombre aquí"></p>
-		<p>
-			<span>Imagen de Personaje</span>
-			<select id="sel_character" name="sel_character">
-				<option value="..">..</option>
-		   </select>
-		</p>
-		<p>
-			<span>Imagen de Fondo</span>
-			<select id="sel_background" name="sel_background">
-				<option value="..">..</option>
-		   </select>
-		</p>
-		<p>
-			<span>Plantillas</span>
-			<select id="sel_plantilla" name="sel_plantilla">
-				<option value="..">..</option>
-		   </select>
-		</p>
-		<p>
-		<form id="character" name="character" action="" method="post" enctype="multipart/form-data">
-			<label>Selecciona imagen de personaje -></label>
-			<input type="file" name="charac" id="charac"/>
-			<input type="submit" value="Subir"/>
-		</form>
-		</p>
-		<p>
-		<form id="background" name="background" action="" method="post" enctype="multipart/form-data">
-			<label>Selecciona imagen de fondo -></label>
-			<input type="file" name="back" id="back"/>
-			<input type="submit" value="Subir"/>
-		</form>
-		</p>
-		<div id="marco"></div>
+	<body>
+		<!-- CABECERA Y BARRA DE ACCIONES RÁPIDAS -->
+		<header class="vtt-header">
+			<div class="vtt-brand">
+				<span class="brand-icon">🐉</span>
+				<div>
+					<h1>RoleDesk</h1>
+					<span class="brand-subtitle">Tablero Táctico D&amp;D</span>
+				</div>
+			</div>
+
+			<div class="vtt-toolbar">
+				<div class="toolbar-group">
+					<span class="group-label">Héroes y Criaturas (SVG)</span>
+					<select id="sel_class" class="vtt-select" title="Clase o arquetipo de D&amp;D">
+						<optgroup label="⚔️ Clases de Héroe (D&amp;D)">
+							<option value="paladin">🛡️ Paladín</option>
+							<option value="mago">🧙‍♂️ Mago</option>
+							<option value="hechicero">🔥 Hechicero</option>
+							<option value="guerrero">⚔️ Guerrero</option>
+							<option value="picaro">🗡️ Pícaro</option>
+							<option value="clerigo">✨ Clérigo</option>
+							<option value="explorador">🏹 Explorador</option>
+							<option value="barbaro">🪓 Bárbaro</option>
+							<option value="bardo">🎵 Bardo</option>
+							<option value="druida">🌿 Druida</option>
+							<option value="monje">☯️ Monje</option>
+							<option value="brujo">👁️ Brujo</option>
+						</optgroup>
+						<optgroup label="👺 Humanoides y Saqueadores">
+							<option value="trasgo">👺 Trasgo (Goblin)</option>
+							<option value="orco">👹 Orco Berserker</option>
+							<option value="kobold">🦎 Kobold</option>
+							<option value="bandido">🗡️ Bandido / Mercenario</option>
+							<option value="cultista">🔮 Cultista Oscuro</option>
+						</optgroup>
+						<optgroup label="💀 No-Muertos">
+							<option value="esqueleto">💀 Esqueleto</option>
+							<option value="zombi">🧟 Zombi</option>
+							<option value="vampiro">🧛 Señor Vampiro</option>
+							<option value="liche">👑 Liche</option>
+						</optgroup>
+						<optgroup label="🕷️ Bestias y Trampas de Dungeon">
+							<option value="lobo">🐺 Lobo / Huargo</option>
+							<option value="arana">🕷️ Araña Gigante</option>
+							<option value="mimico">📦 Cofre Mímico</option>
+							<option value="cubo">🟩 Cubo Gelatinoso</option>
+							<option value="troll">🧌 Ogro / Troll</option>
+						</optgroup>
+						<optgroup label="🐉 Jefes y Aberraciones">
+							<option value="contemplador">👁️ Contemplador (Beholder)</option>
+							<option value="azotamentes">🦑 Azotamentes (Illithid)</option>
+							<option value="demonio">😈 Demonio / Diablo</option>
+							<option value="elemental">💎 Elemental</option>
+							<option value="dragon">🐉 Dragón</option>
+						</optgroup>
+					</select>
+					<input type="text" id="hero_name" class="vtt-input" style="width:105px" placeholder="Nombre (opc.)" title="Nombre personalizado en la ficha">
+					<button id="add-hero" class="btn btn-token" type="button" title="Invocar ficha SVG de la clase seleccionada en el centro del mapa">➕ Invocar</button>
+				</div>
+
+				<div class="toolbar-group">
+					<span class="group-label">Acciones</span>
+					<button id="add-line" class="btn btn-attack" type="button" title="Añadir línea de ataque / acción dirigida">⚔️ Ataque</button>
+					<button id="add-rectangle" class="btn btn-defense" type="button" title="Añadir etiqueta de defensa o reacción">🛡️ Defensa</button>
+				</div>
+
+				<div class="toolbar-group">
+					<span class="group-label">Áreas de Conjuro (AoE)</span>
+					<select id="sel_aoe" class="vtt-select" title="Tipo y radio del área de efecto">
+						<option value="300|#ef4444|🔥 Bola de Fuego (6 m)">🔥 Bola de Fuego (6 m)</option>
+						<option value="225|#38bdf8|❄️ Explosión Helada (4,5 m)">❄️ Explosión Helada (4,5 m)</option>
+						<option value="150|#a855f7|✨ Aura Mágica (3 m)">✨ Aura Mágica (3 m)</option>
+						<option value="225|#22c55e|☠️ Nube Venenosa (4,5 m)">☠️ Nube Venenosa (4,5 m)</option>
+						<option value="375|#eab308|☀️ Luz Sagrada (7,5 m)">☀️ Luz Sagrada (7,5 m)</option>
+					</select>
+					<button id="add-aoe" class="btn btn-magic" type="button" title="Invocar área de efecto en el mapa">✨ Área</button>
+				</div>
+
+				<div class="toolbar-group">
+					<span class="group-label">Tablero</span>
+					<button id="toggle-grid" class="btn btn-secondary active" type="button" title="Mostrar/Ocultar cuadrícula táctica (1,5 metros por casilla)">📏 Rejilla</button>
+					<button id="clear-board" class="btn btn-danger" type="button" title="Limpiar todos los elementos del tablero">🗑️ Limpiar</button>
+				</div>
+
+				<div class="toolbar-group template-bar">
+					<span class="group-label">Guardar Escena</span>
+					<input type="text" id="name_template" class="vtt-input" value="" placeholder="Nombre de plantilla...">
+					<button id="save-template" class="btn btn-gold" type="button">💾 Salvar Plantilla</button>
+				</div>
+			</div>
+		</header>
+
+		<!-- CONTENEDOR PRINCIPAL -->
+		<div class="vtt-workspace">
+			<!-- PANEL LATERAL IZQUIERDO: RECURSOS Y CONTROLES D&D -->
+			<aside class="vtt-sidebar">
+				<!-- SECCIÓN ESCENARIO Y PLANTILLAS -->
+				<section class="vtt-card">
+					<h2 class="card-title">🗺️ Escenario y Biblioteca</h2>
+
+					<div class="form-row">
+						<label for="sel_background">Imagen de Fondo (Dungeon)</label>
+						<select id="sel_background" name="sel_background" class="vtt-select">
+							<option value="..">-- Seleccionar --</option>
+						</select>
+					</div>
+
+					<div class="form-row">
+						<label for="sel_plantilla">Plantillas Guardadas</label>
+						<select id="sel_plantilla" name="sel_plantilla" class="vtt-select">
+							<option value="..">-- Cargar partida --</option>
+						</select>
+					</div>
+				</section>
+
+				<!-- SECCIÓN LANZADOR DE DADOS D&D -->
+				<section class="vtt-card">
+					<h2 class="card-title">🎲 Lanzador de Dados</h2>
+					<div class="dice-controls">
+						<div class="dice-mod-row">
+							<label for="dice-qty">Cant.</label>
+							<input type="number" id="dice-qty" class="vtt-input input-sm" value="1" min="1" max="20">
+							<label for="dice-mod">Mod.</label>
+							<input type="number" id="dice-mod" class="vtt-input input-sm" value="0" min="-20" max="50">
+						</div>
+						<div class="dice-grid">
+							<button type="button" class="btn-die" data-sides="4">d4</button>
+							<button type="button" class="btn-die" data-sides="6">d6</button>
+							<button type="button" class="btn-die" data-sides="8">d8</button>
+							<button type="button" class="btn-die" data-sides="10">d10</button>
+							<button type="button" class="btn-die" data-sides="12">d12</button>
+							<button type="button" class="btn-die btn-d20" data-sides="20">d20</button>
+							<button type="button" class="btn-die" data-sides="100">d100</button>
+						</div>
+						<div id="dice-result-banner" class="dice-result-banner">
+							Pulsa un dado para lanzar...
+						</div>
+					</div>
+				</section>
+
+				<!-- SECCIÓN ORDEN DE INICIATIVA Y HP -->
+				<section class="vtt-card">
+					<div class="card-header-flex">
+						<h2 class="card-title">⚡ Orden de Iniciativa</h2>
+						<span id="round-counter" class="badge-round">Ronda 1</span>
+					</div>
+					<div class="init-add-row">
+						<input type="text" id="init-name" class="vtt-input" placeholder="Nombre">
+						<input type="number" id="init-val" class="vtt-input input-xs" placeholder="Ini" title="Iniciativa">
+						<input type="number" id="init-hp" class="vtt-input input-xs" placeholder="HP" title="Puntos de Golpe (HP)">
+						<button type="button" id="add-init" class="btn btn-gold btn-sm" title="Añadir al combate">+</button>
+					</div>
+					<ul id="init-list" class="init-list"></ul>
+					<div class="init-actions">
+						<button type="button" id="next-turn" class="btn btn-secondary btn-sm">▶ Siguiente Turno</button>
+						<button type="button" id="clear-init" class="btn btn-danger btn-sm">Reiniciar</button>
+					</div>
+				</section>
+
+				<!-- SECCIÓN SUBIDA DE ARCHIVOS -->
+				<section class="vtt-card">
+					<h2 class="card-title">📤 Subir Mapa de Dungeon</h2>
+					<form id="background" name="background" action="" method="post" enctype="multipart/form-data" class="upload-form">
+						<label>⚠️ El mapa debe ser de <b>1250 × 975 px</b> (proporción 50:39)</label>
+						<div class="file-row">
+							<input type="file" name="back" id="back" class="vtt-file"/>
+							<input type="submit" value="Subir" class="btn btn-secondary btn-sm"/>
+						</div>
+					</form>
+				</section>
+
+				<!-- REGISTRO DE COMBATE (COMBAT LOG) -->
+				<section class="vtt-card">
+					<h2 class="card-title">📜 Crónica de Combate</h2>
+					<div id="combat-log" class="combat-log">
+						<div class="log-entry">Bienvenido a RoleDesk. ¡Que comience la aventura!</div>
+					</div>
+				</section>
+			</aside>
+
+			<!-- ÁREA CENTRAL: TABLERO DEL DUNGEON -->
+			<main class="vtt-stage">
+				<div class="stage-hint">
+					<span>📐 Mapa: <b>1250 × 975 px</b> (Rejilla 16×13 casillas de <b>1,5 m</b>) · 💡 <b>Arrastra</b> para mover · <b>Doble clic</b> para borrar</span>
+				</div>
+				<div class="canvas-wrapper">
+					<div id="marco"></div>
+				</div>
+			</main>
+		</div>
 	</body>
 </html>
