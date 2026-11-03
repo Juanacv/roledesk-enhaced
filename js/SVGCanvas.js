@@ -206,8 +206,11 @@ function SVGCanvas(interact, width, height, flexiName, analogName, gifName, id, 
 	    function rotateEvent(handleRot, radius, elementCenter) {
             that.interact(handleRot).gestureable = that.interact(handleRot).draggable({
                     onstart: function (event) {
+                        if (!that.rootMatrix) {
+                            applyTransforms(event);
+                        }
                         var target = document.getElementById(handleRot.getAttribute('data-parent'));
-                        if (target.initAngle === null || target.initAngle === undefined) {
+                        if (target.initAngle === null || target.initAngle === undefined || isNaN(target.initAngle)) {
                             var initX = 0, initY = 0, i = 0, len = target.points.numberOfItems;
                             while (i < len) {
                                 var point = target.points.getItem(i);
@@ -220,7 +223,9 @@ function SVGCanvas(interact, width, height, flexiName, analogName, gifName, id, 
                                     var p0c = Math.sqrt(Math.pow(elementCenter.pageX-initX,2)+ Math.pow(elementCenter.pageY-initY,2)); 
                                     var p1c = Math.sqrt(Math.pow(elementCenter.pageX-point.x,2)+Math.pow(elementCenter.pageY-point.y,2));
                                     var p0p1 = Math.sqrt(Math.pow(initX-point.x,2)+ Math.pow(initY-point.y,2));
-                                    var initAngle = Math.acos((p1c*p1c+p0c*p0c-p0p1*p0p1)/(2*p1c*p0c));
+                                    var cosVal = (p1c*p1c+p0c*p0c-p0p1*p0p1)/(2*p1c*p0c);
+                                    cosVal = Math.max(-1, Math.min(1, cosVal));
+                                    var initAngle = Math.acos(cosVal);
                                         
                                     var atan1Point = Math.atan2(elementCenter.pageY-initY,elementCenter.pageX-initX);
                                     var atan2Point = Math.atan2(elementCenter.pageY-point.y,elementCenter.pageX-point.x);                                                                                
@@ -240,7 +245,8 @@ function SVGCanvas(interact, width, height, flexiName, analogName, gifName, id, 
                         var parent = document.getElementById(handleRot.getAttribute('data-parent')),
                         center = parent.points.getItem(Math.floor(parent.points.numberOfItems/2)),
                         centerX = center.x,
-                        centerY = center.y;
+                        centerY = center.y,
+                        baseAngle = parent.angle;
                             
 			var i = 0, len = parent.points.numberOfItems;
                         while (i < len) {
@@ -254,7 +260,9 @@ function SVGCanvas(interact, width, height, flexiName, analogName, gifName, id, 
                             point.y = (centerY + radiusP * Math.sin(parent.angle));
 
                             useP.setAttribute('x', point.x);
-                            useP.setAttribute('y', point.y); 
+                            useP.setAttribute('y', point.y);
+                            useP.x.baseVal.value = point.x;
+                            useP.y.baseVal.value = point.y; 
                                 
                             if (i === 0) {
                                 var foreign = document.getElementById(parent.parentNode.id+'f');
@@ -263,22 +271,31 @@ function SVGCanvas(interact, width, height, flexiName, analogName, gifName, id, 
                             }
                             i+=1;
                         }
-                        event.target.x.baseVal.value = parent.points.getItem(0).x - (10 * Math.cos(parent.angle));                    
-                        event.target.y.baseVal.value = parent.points.getItem(0).y - (10 * Math.sin(parent.angle)); 
+                        var rotX = parent.points.getItem(0).x + (10 * Math.cos(baseAngle));
+                        var rotY = parent.points.getItem(0).y + (10 * Math.sin(baseAngle));
+                        event.target.setAttribute('x', rotX);
+                        event.target.setAttribute('y', rotY);
+                        event.target.x.baseVal.value = rotX;                    
+                        event.target.y.baseVal.value = rotY; 
                     },
                     onend  : function (event) {
                     }
                 }).snap({
                 mode : 'path',
                 paths: [function (x, y) {
-                    var deltaX = x - elementCenter.pageX,
-                    deltaY = y - elementCenter.pageY,
+                    if (!that.rootMatrix) {
+                        that.rootMatrix = that.svg.getScreenCTM();
+                    }
+                    var svgX = ((x - window.pageXOffset) - that.rootMatrix.e) / that.rootMatrix.a,
+                    svgY = ((y - window.pageYOffset) - that.rootMatrix.f) / that.rootMatrix.d,
+                    deltaX = svgX - elementCenter.pageX,
+                    deltaY = svgY - elementCenter.pageY,
                     angle = Math.atan2(deltaY, deltaX),
                     parent = document.getElementById(handleRot.getAttribute('data-parent'));
                     parent.angle = angle;
                     return {
-                        x: elementCenter.pageX + radius * Math.cos(angle),
-                        y: elementCenter.pageY + radius * Math.sin(angle),
+                        x: (elementCenter.pageX + radius * Math.cos(angle)) * that.rootMatrix.a + that.rootMatrix.e + window.pageXOffset,
+                        y: (elementCenter.pageY + radius * Math.sin(angle)) * that.rootMatrix.d + that.rootMatrix.f + window.pageYOffset,
                         range: Infinity
                     };
                 }]
@@ -345,10 +362,10 @@ function SVGCanvas(interact, width, height, flexiName, analogName, gifName, id, 
             var nodes = document.getElementsByTagName('use');
             var nodesArray = Array.prototype.slice.call(nodes,0);
             nodesArray.forEach(function(node) {
-                if (node.class === "point-handle") {
+                if (node.getAttribute('class') === "point-handle") {
                     var newPoint = that.svg.createSVGPoint();
-                    newPoint.x = parseFloat(node.getAttribute('x'));
-                    newPoint.y = parseFloat(node.getAttribute('y'));
+                    newPoint.x = parseFloat(node.getAttribute('x')) || node.x.baseVal.value;
+                    newPoint.y = parseFloat(node.getAttribute('y')) || node.y.baseVal.value;
                     originalPoints.push(newPoint);
                 }
             });
@@ -386,10 +403,16 @@ function SVGCanvas(interact, width, height, flexiName, analogName, gifName, id, 
 		function addHandlesEvents(item) {	
             that.interact(item).gestureable = that.interact(item).draggable({
                 onstart : function (event) {
+                    if (!that.rootMatrix) {
+                        applyTransforms(event);
+                    }
                     that.svg.setAttribute('class', 'dragging');
 
                 },
                 onmove: function (event) {
+                    if (!that.rootMatrix) {
+                        that.rootMatrix = that.svg.getScreenCTM();
+                    }
                     var target = event.target;
                     var parentId = target.parentNode.getAttribute('id');
                     var fY = 0, fX = 0;
@@ -397,8 +420,8 @@ function SVGCanvas(interact, width, height, flexiName, analogName, gifName, id, 
                         var foreign = document.getElementById(parentId+'f');
                         var x = parseFloat(foreign.getAttribute('x'));
                         var y = parseFloat(foreign.getAttribute('y'));
-                        x += event.dx;
-                        y += event.dy;
+                        x += event.dx / that.rootMatrix.a;
+                        y += event.dy / that.rootMatrix.d;
                         foreign.setAttribute('x',x);
                         foreign.setAttribute('y',y);
                     }
@@ -411,17 +434,23 @@ function SVGCanvas(interact, width, height, flexiName, analogName, gifName, id, 
                         point.y += event.dy / that.rootMatrix.d;
 
                         useP.setAttribute('x', point.x);
-                        useP.setAttribute('y', point.y);                                                             
+                        useP.setAttribute('y', point.y);
+                        useP.x.baseVal.value = point.x;
+                        useP.y.baseVal.value = point.y;                                                             
                         i +=1;
                     }                    
                     
                     var useRot = document.getElementById(target.getAttribute('id')+'rot');  
                     if (useRot) {
-                        var newX = parseFloat(useRot.getAttribute('x'))+ event.dx / that.rootMatrix.a;
-                        var newY = parseFloat(useRot.getAttribute('y'))+ event.dy / that.rootMatrix.d;
+                        var curRotX = useRot.getAttribute('x') !== null ? parseFloat(useRot.getAttribute('x')) : useRot.x.baseVal.value;
+                        var curRotY = useRot.getAttribute('y') !== null ? parseFloat(useRot.getAttribute('y')) : useRot.y.baseVal.value;
+                        var newX = curRotX + event.dx / that.rootMatrix.a;
+                        var newY = curRotY + event.dy / that.rootMatrix.d;
 
                         useRot.setAttribute('x',newX);
                         useRot.setAttribute('y',newY);
+                        useRot.x.baseVal.value = newX;
+                        useRot.y.baseVal.value = newY;
                     }            
                     redoPoints();
                 },
@@ -442,22 +471,8 @@ function SVGCanvas(interact, width, height, flexiName, analogName, gifName, id, 
                             if (i === Math.floor(target.points.numberOfItems/2)) {                         
                                 var angle = Math.atan2(point.y-newY,point.x-newX),
                                 elementCenter  = { pageX: point.x, pageY: point.y };
-                                if ((newY <= point.y) && (newX <= point.x)) {
-                                    newX = newX - (10 * Math.cos(angle));                    
-                                    newY = newY - (10 * Math.sin(angle));                                
-                                }
-                                else if ((newY > point.y) && (newX <= point.x)) {
-                                    newX = newX - (10 * Math.cos(angle));                    
-                                    newY = newY + (10 * Math.sin(angle));                               
-                                }
-                                else if ((newY <= point.y) && (newX > point.x)) {
-                                    newX = newX + (10 * Math.abs(Math.cos(angle)));                    
-                                    newY = newY - (10 * Math.abs(Math.sin(angle)));                             
-                                }
-                                else {
-                                    newX = newX + (10 * Math.abs(Math.cos(angle)));                    
-                                    newY = newY + (10 * Math.abs(Math.sin(angle)));                               
-                        		}
+                                newX = newX - (10 * Math.cos(angle));                    
+                                newY = newY - (10 * Math.sin(angle));                                
                                     
                                 var radius = Math.sqrt(Math.pow(elementCenter.pageX-newX,2) + Math.pow((elementCenter.pageY - newY),2));
                                 rotateEvent(handleRot,radius, elementCenter);
@@ -471,42 +486,54 @@ function SVGCanvas(interact, width, height, flexiName, analogName, gifName, id, 
 	
 		function addGeneralEvents() {
             that.interact(that.svg)
+                .on('down', function(e) { applyTransforms(e) })
+                .on('pointerdown', function(e) { applyTransforms(e) })
                 .on('mousedown', function(e) { applyTransforms(e) })
                 .on('touchstart', function(e) { applyTransforms(e) });	
 
             that.interact('.point-handle').gestureable = that.interact('.point-handle')
             .draggable({
                 onstart: function (event) {
+                    if (!that.rootMatrix) {
+                        applyTransforms(event);
+                    }
                     that.svg.setAttribute('class', 'dragging');
                 },
                 onmove: function (event) {
+                    if (!that.rootMatrix) {
+                        that.rootMatrix = that.svg.getScreenCTM();
+                    }
                     var target = event.target;
                     var i = parseInt(target.getAttribute('data-index'),10) || 0;
                     var parent = target.getAttribute('data-parent');
-                    var point = document.getElementById(parent).points.getItem(i);
+                    var parentEl = document.getElementById(parent);
+                    var point = parentEl.points.getItem(i);
 
                     point.x += event.dx / that.rootMatrix.a;
                     point.y += event.dy / that.rootMatrix.d;
 
+                    target.setAttribute('x', point.x);
+                    target.setAttribute('y', point.y);
                     target.x.baseVal.value = point.x;
-                    target.y.baseVal.value = point.y ;
+                    target.y.baseVal.value = point.y;
 
                     if (parent.indexOf(that.flexiName) !== -1) {
                         if (i===0) {
-                            var foreignId = document.getElementById(parent).parentNode.id + 'f',
+                            var foreignId = parentEl.parentNode.id + 'f',
                             foreignEl = document.getElementById(foreignId);
                             foreignEl.setAttribute('x',point.x-30);
                             foreignEl.setAttribute('y',point.y+5);   
                             
-                            var useRot = document.getElementById(target.getAttribute('data-parent')+'rot');  
+                            var useRot = document.getElementById(parent+'rot');  
                             if (useRot) {
-                                var target = document.getElementById(useRot.getAttribute('data-parent')),
-                                center = target.points.getItem(Math.floor(target.points.numberOfItems/2)),
+                                var center = parentEl.points.getItem(Math.floor(parentEl.points.numberOfItems/2)),
                                 angle = Math.atan2(center.y-point.y,center.x-point.x),
                                 newX = point.x - (10 * Math.cos(angle)),
                                 newY = point.y - (10 * Math.sin(angle));
                                 useRot.setAttribute('x',newX);
                                 useRot.setAttribute('y',newY);
+                                useRot.x.baseVal.value = newX;
+                                useRot.y.baseVal.value = newY;
 
                                 var radius = Math.sqrt(Math.pow(center.x-newX,2)+Math.pow(center.y -newY,2));
                                 var elementCenter  = { pageX: center.x, pageY: center.y };
@@ -574,23 +601,16 @@ function SVGCanvas(interact, width, height, flexiName, analogName, gifName, id, 
             .styleCursor(true);	
             
         	that.interact(that.svg).on('dblclick',function(event) { 		   
-                var target;
-                if (event.target.correspondingUseElement) {
-                    target = event.target.correspondingUseElement;
-                }
-                else {
-                    target  = event.target;
-                }
+                var target = event.target.correspondingUseElement || event.target;
                 if (target.id !== that.id) {
                     if (target.getAttribute('class') === 'point-handle') {
                         var parent = target.getAttribute('data-parent');
                         var item = document.getElementById(parent);
                         var numberOfItems = item.points.numberOfItems;
-                        var indice = 0;
-                        var indice = target.getAttribute('data-index');
-                        if (parseInt(indice) !== 0 && parseInt(indice) !== (numberOfItems -1)) {
+                        var indice = parseInt(target.getAttribute('data-index'), 10);
+                        if (indice !== 0 && indice !== (numberOfItems - 1)) {
                             that.removeNodes(numberOfItems, item.id);
-                            item.points.removeItem(parseInt(indice));
+                            item.points.removeItem(indice);
                             var handleRot = document.getElementById(item.id+'rot');
                             if (handleRot) {
                                 that.svg.removeChild(handleRot);
@@ -609,17 +629,19 @@ function SVGCanvas(interact, width, height, flexiName, analogName, gifName, id, 
                                 var parentId = target.parentNode.getAttribute('id');
                                 var flexiLine = document.getElementById(parentId+'pl');
                                 that.removeNodes(flexiLine.points.numberOfItems, parentId+'pl');
-                                var rot = document.getElementById(parentId+'plrot')
+                                var rot = document.getElementById(parentId+'plrot');
                                 if (rot) {
                                     that.svg.removeChild(rot);
                                 }
                                 that.removeChild(target.parentNode);                                
                             }
                             else {
-                            	var parentName = target.classList.item(0) || target.class;
+                            	var parentName = target.classList.item(0) || target.getAttribute('class');
                             	if (parentName !== undefined && parentName !== null && parentName !== "") { 
                             		var nodeTargetToRemove = document.getElementById(parentName);
-                                	that.removeChild(nodeTargetToRemove);
+                                	if (nodeTargetToRemove) {
+                                		that.removeChild(nodeTargetToRemove);
+                                	}
                                 }
                             }
                         }
@@ -633,7 +655,9 @@ function SVGCanvas(interact, width, height, flexiName, analogName, gifName, id, 
         	var i = 0;
             while (i < numberOfNodes) {				
                 var node = document.getElementById(parentId + i);
-                that.removeChild(node);
+                if (node) {
+                    that.removeChild(node);
+                }
                 i +=1;
             }
 		}
@@ -644,22 +668,11 @@ function SVGCanvas(interact, width, height, flexiName, analogName, gifName, id, 
 		
     	this.toPrint = function() {
             var svgToPrint = document.getElementById(that.container).cloneNode(true);
-            var nodes = svgToPrint.getElementsByTagName('use');
-            var nodesArray = Array.prototype.slice.call(nodes,0);
-            nodesArray.forEach(function(node) {				
-                    if (node.classList[0]==="point-handle" || node.classList[0]==="point-rotation") {
-                    	node.parentNode.removeChild(node);
-                    }
-            });
-            var foreigners = svgToPrint.getElementsByTagName('foreignObject');		
-            var foreignersArray = Array.prototype.slice.call(foreigners,0);		
-            foreignersArray.forEach(function(foreign) {				
-                foreign.parentNode.removeChild(foreign);				
-            });
-            var texts = svgToPrint.querySelectorAll('.delete');
-            var textsArray = Array.prototype.slice.call(texts,0);
-            textsArray.forEach(function(text) {
-                text.parentNode.removeChild(text);
+            var removable = svgToPrint.querySelectorAll('.point-handle, .point-rotation, foreignObject, .delete');
+            Array.prototype.forEach.call(removable, function(node) {
+                if (node.parentNode) {
+                    node.parentNode.removeChild(node);
+                }
             });
             return svgToPrint.innerHTML;
         }
@@ -746,10 +759,10 @@ function SVGCanvas(interact, width, height, flexiName, analogName, gifName, id, 
             var groupSVG;
             if (groupRecovered) {
                 groupSVG = groupRecovered;
-                var images = document.querySelectorAll('.'+group.id);
+                var images = document.querySelectorAll('.'+groupSVG.id);
                 var imagesArray = Array.prototype.slice.call(images,0);
                 imagesArray.forEach(function(image) {
-                    image.setAttribute('xlink:href',group.getAttribute('image-source1'));
+                    image.setAttribute('xlink:href',groupSVG.getAttribute('image-source1'));
                 });                
             }
             else {
@@ -763,7 +776,7 @@ function SVGCanvas(interact, width, height, flexiName, analogName, gifName, id, 
                 var frgn = addHtml(groupSVG, fImag, width,height,x,y,'img',1); 
                 addEvents(frgn);   
                 var imgEl = img(id+'img', src, width, height, x, y);  
-                imgEl.class= id;
+                imgEl.setAttribute('class', id);
                 groupSVG.appendChild(imgEl); 
             }
                                    
@@ -790,11 +803,11 @@ function SVGCanvas(interact, width, height, flexiName, analogName, gifName, id, 
             groupsArray = Array.prototype.slice.call(groups,0); 
             groupsArray.forEach(function(groupItem) {                
                 if (groupItem.id.indexOf(that.flexiName) !== -1) {
-                    that.flexyLine(groupItem.id, null, null, groupsArray[i]);
+                    that.flexyLine(groupItem.id, null, null, groupItem);
                 }
                 else  {
 					if (groupItem.id.indexOf(that.analogName) !== -1) {
-                        that.analogBox(groupItem.id, groupsArray[i]);
+                        that.analogBox(groupItem.id, groupItem);
                     }
                     else if (groupItem.id.indexOf(that.gifName) !== -1) {                        
                         that.imageEle(groupItem.id, groupItem);                        

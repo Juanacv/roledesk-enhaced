@@ -6,23 +6,30 @@ $TEMPLATES_DIR = "templates";
 function getFiles($directory) {
 	$tmp_files = scandir($directory);
 	$files = array();
+	$allowed = array("jpg", "png", "jpeg", "gif", "svg");
 
-	for ($i=0; $i < sizeOf($tmp_files); $i++) {
-		if ($tmp_files[$i] != "." && $tmp_files[$i] != "..") {
-			$imageFileType = pathinfo($tmp_files[$i],PATHINFO_EXTENSION);
-			if($imageFileType == "jpg" || $imageFileType == "png" || $imageFileType == "jpeg" || $imageFileType == "gif" || $imageFileType == "svg") {
-				$files[] = $tmp_files[$i]; 
+	foreach ($tmp_files as $file) {
+		if ($file !== "." && $file !== "..") {
+			$imageFileType = strtolower(pathinfo($file, PATHINFO_EXTENSION));
+			if (in_array($imageFileType, $allowed)) {
+				$files[] = $file; 
 			}
 		}
 	}
 	echo json_encode($files);
 }
 
+function sendError($message) {
+	header('HTTP/1.1 500 Internal Server Error');
+	header('Content-Type: application/json; charset=UTF-8');
+	die($message);
+}
+
 function setFile($directory, $input) {
 	$base_name = basename($_FILES[$input]["name"]);
 	$target_file = $directory.DIRECTORY_SEPARATOR.$base_name;
 	$source_file = $_FILES[$input]["tmp_name"];
-	$imageFileType = pathinfo($target_file,PATHINFO_EXTENSION);
+	$imageFileType = strtolower(pathinfo($target_file, PATHINFO_EXTENSION));
 	$check = getimagesize($source_file);
 	if ($check !== false) {
 		$sizeinpixels = false;
@@ -37,17 +44,15 @@ function setFile($directory, $input) {
 			}
 		}
 		if (!$sizeinpixels) {
-			header('HTTP/1.1 500 Internal Server Error');
-        	header('Content-Type: application/json; charset=UTF-8');
-        	die(json_encode(array('message' => 'El tamaño de la imagen debe ser 1250x975 para fondos y 90x62 para personajes como máximos')));
+			sendError(json_encode(array('message' => 'El tamaño de la imagen debe ser 1250x975 para fondos y 60x92 para personajes como máximos')));
 		}
 		else {
-			if($imageFileType == "jpg" || $imageFileType == "png" || $imageFileType == "jpeg" || $imageFileType == "gif" ) {
+			if (in_array($imageFileType, array("jpg", "png", "jpeg", "gif"))) {
 				if ($_FILES[$input]["size"] <= 6000000) {
 					$j = 0;
+					$file_info = pathinfo($base_name);
 					while (file_exists($target_file)) {
-						$file_arr = explode(".",$base_name);
-						$base_name = $file_arr[0]."-".$j.".".$file_arr[1];
+						$base_name = $file_info['filename']."-".$j.".".$file_info['extension'];
 						$target_file = $directory.DIRECTORY_SEPARATOR.$base_name;
 						$j++;
 					}
@@ -56,51 +61,36 @@ function setFile($directory, $input) {
        			 		print json_encode(array('message' => $base_name));
        			 	}
        			 	else {
-       			 		header('HTTP/1.1 500 Internal Server Error');
-        				header('Content-Type: application/json; charset=UTF-8');
-        				die('Error copiando el archivo en el servidor');
+       			 		sendError('Error copiando el archivo en el servidor');
        			 	}
 				}
 				else {
-					header('HTTP/1.1 500 Internal Server Error');
-        			header('Content-Type: application/json; charset=UTF-8');
-        			die('El tamaño del archivo debe ser menor a 6 mb');
+					sendError('El tamaño del archivo debe ser menor a 6 mb');
 				}
 			}
 			else {
-				header('HTTP/1.1 500 Internal Server Error');
-        		header('Content-Type: application/json; charset=UTF-8');
-        		die('Las extensiones admitidas son jpg, png, jpeg y gif');
+				sendError('Las extensiones admitidas son jpg, png, jpeg y gif');
 			}
 		}
 	}
 	else {
-		header('HTTP/1.1 500 Internal Server Error');
-        header('Content-Type: application/json; charset=UTF-8');
-        die('El archivo no es del tipo imagen');
+		sendError('El archivo no es del tipo imagen');
 	}
 }
 
 function saveTemplate($svg, $name, $directory) {
-	str_replace('&quot;', '\'', $svg);   
-	$exists = false;
-	if (file_exists($directory.DIRECTORY_SEPARATOR.$name.'.svg')) {
-		unlink($directory.DIRECTORY_SEPARATOR.$name.'.svg');
-		$exists = true;
+	$svg = str_replace('&quot;', '\'', $svg);   
+	$file_path = $directory.DIRECTORY_SEPARATOR.$name.'.svg';
+	$exists = file_exists($file_path);
+	if ($exists) {
+		unlink($file_path);
 	}
-    if (file_put_contents($directory.DIRECTORY_SEPARATOR.$name.'.svg', $svg)) {
+    if (file_put_contents($file_path, $svg)) {
     	header('Content-Type: application/json');
-       	if (!$exists) {
-       		print json_encode(array('message' => $name.'.svg'));
-       	}
-       	else {
-       		print json_encode(array('message' => ''));
-       	}
+    	print json_encode(array('message' => $exists ? '' : $name.'.svg'));
     }
     else {
-    	header('HTTP/1.1 500 Internal Server Error');
-        header('Content-Type: application/json; charset=UTF-8');
-        die('La plantilla no se ha podido salvar');
+    	sendError('La plantilla no se ha podido salvar');
     }
 }
 

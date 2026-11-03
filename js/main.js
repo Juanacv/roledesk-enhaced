@@ -1,70 +1,69 @@
 function createSelect(id, tipo) {
 	var sele = document.createElement('select');
 	sele.name = 'As'+ id;
-	for (i=0; i<10; i++) {
-		opt = document.createElement('option');
+	var len = (tipo !== undefined) ? tipo.length : 10;
+	for (var i=0; i<len; i++) {
+		var opt = document.createElement('option');
 		opt.value = i;
-		if (tipo !== undefined) {
-			if (tipo[i] !== undefined) {
-				opt.text = tipo[i];
-			}
+		if (tipo !== undefined && tipo[i] !== undefined) {
+			opt.text = tipo[i];
 		}
 		sele.appendChild(opt);
 	}
 	return sele;
 }
+function loadSelectOptions(actionId, selectSelector) {
+	$.ajax({
+		url: "ajax_files.php",
+		method: "POST",
+		data: { id: actionId },
+		dataType: "json"
+	})
+	.done(function(files) {
+		files.sort();
+		var $select = $(selectSelector);
+		$.each(files, function (i, file) {
+			$select.append($('<option>', { 
+				value: file,
+				text : file 
+			}));
+		});
+	});
+}
 function getSelectFormValues() {
+	loadSelectOptions("CHARACTER", "#sel_character");
+	loadSelectOptions("BACKGROUND", "#sel_background");
+	loadSelectOptions("GETTEMPLATE", "#sel_plantilla");
+}
+function uploadImageForm(formElement, actionId, selectSelector) {
+	var params = new FormData(formElement);
+	params.append("id", actionId);
 	$.ajax({
 		url: "ajax_files.php",
-		method:"POST",
-		data: {id:"CHARACTER" },
-		dataType:"json"
+		method: "POST",
+		data: params,
+		contentType: false,      
+		cache: false,             
+		processData: false,  
+		dataType: "json"
 	})
-	.done(function(files) {
-		files.sort();
-		$.each(files, function (i, file) {
-    		$('#sel_character').append($('<option>', { 
-        		value: file,
-        		text : file 
-   		 	}));
-		});
-	});
-	$.ajax({
-		url: "ajax_files.php",
-		method:"POST",
-		data: {id:"BACKGROUND" },
-		dataType:"json"
+	.done(function(file) {
+		$(selectSelector).append($('<option>', { 
+			value: file.message,
+			text : file.message,
+			selected: true
+		}));
 	})
-	.done(function(files) {
-		files.sort();
-		$.each(files, function (i, file) {
-    		$('#sel_background').append($('<option>', { 
-        		value: file,
-        		text : file 
-   		 	}));
-		});
-	});
-	$.ajax({
-		url: "ajax_files.php",
-		method:"POST",
-		data: {id:"GETTEMPLATE" },
-		dataType:"json"
-	})
-	.done(function(files) {
-		files.sort();
-		$.each(files, function (i, file) {
-    		$('#sel_plantilla').append($('<option>', { 
-        		value: file,
-        		text : file 
-   		 	}));
-		});
+	.fail(function(msg) {
+		alert(msg.responseText);
 	});
 }
 $(document).ready(function() {
 	var states1 = ['...','Bien', 'Herido', 'Herido Grave', 'Herido de Muerte','Aturdido','Envenedado','Paralizado','Pánico','Hechizado','Muerto'];
-	var states2 = ['...','Puño', 'Espada corta', 'Espada larga', 'Mandoble', 'Arco','Flecha','Hechizo','Daga','Honda','Patada'];
+	var states2 = ['...','Puño', 'Espada corta', 'Espada larga', 'Mandoble', 'Arco','Flecha','Virote','Hechizo','Daga','Honda','Patada'];
 	var states3 = ['...','Sin Defensa','Escudo','Armadura','Esquivar','Hechizo','Clemencia','Contrataque','Desaparecer'];
 	
+	var csele = 0;
 	var selectA = createSelect(csele++, states2.sort()); 
 	var selectB = createSelect(csele++, states3.sort()); 
 	var selectC = createSelect(csele++, states1.sort());
@@ -72,61 +71,20 @@ $(document).ready(function() {
 	var abox = 0;
 	var imagen = 0;
 	var svgCnv;
-	var csele = 0;
 	
 	getSelectFormValues();
 	
-	svgCnv = new SVGCanvas(window.interact, 1250, 975,'A','C','B','svg-edit','marco',selectA,selectB,selectC)
+	svgCnv = new SVGCanvas(window.interact, 1250, 975,'A','C','B','svg-edit','marco',selectA,selectB,selectC);
 	$('#svg-edit').css('background-image','url(images/background/default.jpg)');
 
 	$("#background").on("submit", function(e) {
 		e.preventDefault();
-		var params = new FormData(this);
-		params.append("id","SAVEBACKGROUND");
-		$.ajax({
-			url: "ajax_files.php",
-			method:"POST",
-			data: params,
-			contentType: false,      
-			cache: false,             
-			processData:false,  
-			dataType:"json"
-		})
-		.done(function(file) {
-    		$('#sel_background').append($('<option>', { 
-        		value: file.message,
-        		text : file.message 
-   		 	}));
-   		 	$("#sel_background option:last-child").attr("selected","selected");
-		})
-		.fail(function(msg) {
-			alert(msg.responseText);
-		});
+		uploadImageForm(this, "SAVEBACKGROUND", "#sel_background");
 	});
 	
 	$("#character").on("submit", function(e) {
 		e.preventDefault();
-		var params = new FormData(this);
-		params.append("id","SAVECHARACTER");
-		$.ajax({
-			url: "ajax_files.php",
-			method:"POST",
-			data: params,
-			contentType: false,      
-			cache: false,             
-			processData:false,  
-			dataType:"json"
-		})
-		.done(function(file) {
-    		$('#sel_character').append($('<option>', { 
-        		value: file.message,
-        		text : file.message 
-   		 	}));
-   		 	$("#sel_character option:last-child").attr("selected","selected");
-		})
-		.fail(function(msg) {
-			alert(msg.responseText);
-		});
+		uploadImageForm(this, "SAVECHARACTER", "#sel_character");
 	});
 	
 	$("#sel_background").on("change", function() {
@@ -138,9 +96,9 @@ $(document).ready(function() {
 	
 	$("#back").on("change",function(e) {
 		var file = this.files[0];
-		var imageType = file.type;
-		var match= ["image/jpeg","image/png","image/jpg","image/gif"];
-		if (imageType == match[0] || imageType == match[1] || imageType == match[2] || imageType == match[3]) {
+		if (!file) return;
+		var match = ["image/jpeg","image/png","image/jpg","image/gif"];
+		if (match.indexOf(file.type) !== -1) {
 			var reader = new FileReader();
 			reader.onload = function(e) {
 				$('#svg-edit').css('background-image','url('+e.target.result+')');
@@ -160,6 +118,10 @@ $(document).ready(function() {
                     var group = $(this)[0];
                     if (group.id.indexOf('A') != -1) {
                         svgCnv.removeNodes(group.firstChild.points.numberOfItems, group.firstChild.id);
+                        var rotNode = document.getElementById(group.firstChild.id + 'rot');
+                        if (rotNode) {
+                            svgCnv.removeChild(rotNode);
+                        }
                         svgCnv.removeChild(group);
                     }
                     else {
@@ -178,9 +140,9 @@ $(document).ready(function() {
 				if (file.message !== "") {
 			    	$('#sel_plantilla').append($('<option>', { 
         				value: file.message,
-        				text : file.message 
+        				text : file.message,
+        				selected: true
    		 			}));
-   		 			$("#sel_plantilla option:last-child").attr("selected","selected");
    		 		}
 			})
 			.fail(function(msg) {
