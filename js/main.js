@@ -65,14 +65,48 @@ function uploadImageForm(formElement, actionId, selectSelector) {
 	});
 }
 $(document).ready(function() {
-	var states1 = ['...','Bien', 'Herido', 'Herido Grave', 'Herido de Muerte','Aturdido','Envenedado','Paralizado','Pánico','Hechizado','Muerto'];
-	var states2 = ['...','Puño', 'Espada corta', 'Espada larga', 'Mandoble', 'Arco','Flecha', 'Ballesta', 'Virote','Hechizo','Daga','Honda','Patada'];
-	var states3 = ['...','Sin Defensa','Escudo','Armadura','Esquivar','Hechizo','Clemencia','Contrataque','Desaparecer'];
+	function sortStates(arr) {
+		var items = arr.slice(1).sort(function(a, b) {
+			return a.localeCompare(b, 'es');
+		});
+		return ['...'].concat(items);
+	}
+
+	var states1 = [
+		'...', 'Bien', 'Herido', 'Herido Grave', 'Herido de Muerte',
+		'Aturdido', 'Envenenado', 'Paralizado', 'Petrificado', 'Pánico', 'Hechizado',
+		'Quemado', 'Congelado', 'Cegado', 'Derribado', 'Agarrado', 'Muerto'
+	];
+	var states2 = [
+		'...',
+		// Ataques de Héroes, Armas y Arrojadizos Ofensivos
+		'Agua bendita', 'Arco', 'Ballesta', 'Bomba / Explosivo', 'Daga',
+		'Espada corta', 'Espada larga', 'Flecha', 'Fuego de alquimista',
+		'Hacha de batalla', 'Hechizo', 'Honda', 'Lanza / Jabalina',
+		'Mandoble', 'Maza / Martillo', 'Patada', 'Pergamino mágico', 'Puño', 'Virote',
+		// Ataques de Enemigos y Monstruos
+		'Ácido / Engullir', 'Aguijón venenoso', 'Alarido aterrador',
+		'Coletazo', 'Drenaje de vida', 'Extracción cerebral', 'Garra',
+		'Garrote / Aplastar', 'Llamarada', 'Mirada petrificante', 'Mordisco', 'Pseudópodo',
+		'Rayo ocular', 'Tentáculo'
+	];
+	var states3 = [
+		'...',
+		// Defensas, Pociones y Apoyo
+		'Antídoto', 'Armadura', 'Barrera mágica', 'Bendición / Inspirar',
+		'Clemencia', 'Cobertura parcial', 'Cobertura total', 'Contraataque',
+		'Curar heridas', 'Desaparecer', 'Escudo', 'Escudo de fe',
+		'Esquivar', 'Evasión', 'Hechizo', 'Inmunidad', 'Invisibilidad',
+		'Parada / Bloqueo', 'Pergamino mágico', 'Poción de curación',
+		'Poción de fuerza', 'Poción de invisibilidad', 'Poción de maná',
+		'Poción de resistencia', 'Poción de velocidad', 'Posición defensiva',
+		'Regeneración', 'Resistencia', 'Sin Defensa'
+	];
 	
 	var csele = 0;
-	var selectA = createSelect(csele++, states2.sort()); 
-	var selectB = createSelect(csele++, states3.sort()); 
-	var selectC = createSelect(csele++, states1.sort());
+	var selectA = createSelect(csele++, sortStates(states2)); 
+	var selectB = createSelect(csele++, sortStates(states3)); 
+	var selectC = createSelect(csele++, sortStates(states1));
 	var cline = 0;
 	var abox = 0;
 	var imagen = 0;
@@ -206,13 +240,11 @@ $(document).ready(function() {
 	$("#add-line").on("click", function() { 
 		cline+=1; 	
 		svgCnv.flexyLine(cline, "#38bdf8", "#00ff00"); 
-		addLog('Añadida línea de <b>Ataque #' + cline + '</b>');
 	});
 	
 	$("#add-rectangle").on("click",function() { 
 		abox+=1; 
 		svgCnv.analogBox(abox); 
-		addLog('Añadida etiqueta de <b>Defensa #' + abox + '</b>');
 	});
 	
 	// Estadísticas base de HP y bonificador de Iniciativa según Manual de Monstruos / Clases D&D
@@ -243,6 +275,7 @@ $(document).ready(function() {
 		mimico:       { hp: 58, mod: 1,  isEnemy: true },
 		cubo:         { hp: 84, mod: -4, isEnemy: true },
 		troll:        { hp: 84, mod: 1,  isEnemy: true },
+		basilisco:    { hp: 52, mod: -1, isEnemy: true },
 		contemplador: { hp: 180,mod: 2,  isEnemy: true },
 		azotamentes:  { hp: 71, mod: 1,  isEnemy: true },
 		demonio:      { hp: 110,mod: 2,  isEnemy: true },
@@ -275,18 +308,19 @@ $(document).ready(function() {
 			enemyCounts[classKey] = (enemyCounts[classKey] || 0) + 1;
 			finalName = cleanClassName + ' ' + enemyCounts[classKey];
 		} else {
-			finalName = cleanClassName;
+			enemyCounts[classKey] = (enemyCounts[classKey] || 0) + 1;
+			finalName = (enemyCounts[classKey] > 1) ? (cleanClassName + ' ' + enemyCounts[classKey]) : cleanClassName;
 		}
 
 		svgCnv.heroToken(imagen, classKey, finalName);
 		$("#hero_name").val('');
 
+		var rollInit = Math.max(1, (Math.floor(Math.random() * 20) + 1) + stats.mod);
+		addCombatantToInitiative(finalName, rollInit, stats.hp, stats.isEnemy, 'B' + imagen);
 		if (stats.isEnemy) {
-			var rollInit = Math.max(1, (Math.floor(Math.random() * 20) + 1) + stats.mod);
-			addCombatantToInitiative(finalName, rollInit, stats.hp, true, 'B' + imagen);
-			addLog('Invocado enemigo <b>' + finalName + '</b> (Ini: <b>' + rollInit + '</b>, <b>' + stats.hp + ' HP</b>) en el mapa y añadido a Iniciativa.');
+			addLog('Invocado enemigo <b>' + finalName + '</b> (Ini: <b>' + rollInit + '</b>, <b>' + stats.hp + ' HP</b>) y añadido a Iniciativa.');
 		} else {
-			addLog('Invocado héroe <b>' + finalName + '</b> en el centro del mapa.');
+			addLog('Invocado héroe <b>' + finalName + '</b> (Ini: <b>' + rollInit + '</b>, <b>' + stats.hp + ' HP</b>) y añadido a Iniciativa.');
 		}
 	});
 
@@ -299,6 +333,34 @@ $(document).ready(function() {
 		var label = val[2] || 'Área';
 		svgCnv.spellArea(aoeCount, radius, color, label);
 		addLog('Invocada <b>' + label + '</b> en el tablero.');
+	});
+
+	// AMPLIAR LISTA DE PERGAMINOS MÁGICOS
+	function addNewScroll() {
+		var scrollName = $.trim($("#new_scroll_name").val());
+		if (!scrollName) return;
+		var $sel = $("#sel_scroll");
+		var exists = false;
+		$sel.find("option").each(function() {
+			if ($(this).val().toLowerCase() === scrollName.toLowerCase()) {
+				$(this).prop("selected", true);
+				exists = true;
+			}
+		});
+		if (!exists) {
+			var $opt = $('<option></option>').val(scrollName).text('📜 ' + scrollName).prop('selected', true);
+			$sel.append($opt);
+			addLog('📜 Nuevo pergamino añadido a la biblioteca: <b>' + scrollName + '</b>.');
+		}
+		$("#new_scroll_name").val('');
+	}
+
+	$("#add-scroll").on("click", addNewScroll);
+	$("#new_scroll_name").on("keydown", function(e) {
+		if (e.key === "Enter" || e.keyCode === 13) {
+			e.preventDefault();
+			addNewScroll();
+		}
 	});
 
 	// CONSTRUCTOR DE MAPAS (PALETA DE FONDO Y FIGURAS BÁSICAS)
@@ -392,6 +454,16 @@ $(document).ready(function() {
 		addLog('🎲 Tirada <b>' + formula + '</b>: [' + rolls.join(', ') + '] = <b>' + total + '</b>' + critHtml);
 	});
 
+	window.removeCombatantByToken = function(tokenId) {
+		for (var i = combatants.length - 1; i >= 0; i--) {
+			if (combatants[i].tokenId === tokenId) {
+				combatants.splice(i, 1);
+			}
+		}
+		if (currentTurnIndex >= combatants.length) currentTurnIndex = 0;
+		renderInitiative();
+	};
+
 	function renderInitiative() {
 		var $list = $("#init-list");
 		$list.empty();
@@ -402,24 +474,118 @@ $(document).ready(function() {
 			var isDead = (c.hp <= 0);
 			var $li = $('<li class="init-item' + (isActive ? ' active-turn' : '') + '"></li>');
 			var badgeColor = c.isEnemy ? ' style="background:#7f1d1d;color:#fecaca;border:1px solid #ef4444"' : '';
-			$li.append('<span class="init-badge"' + badgeColor + '>' + c.init + '</span>');
-			$li.append('<span class="init-name-lbl">' + (c.isEnemy ? '💀 ' : '🛡️ ') + c.name + '</span>');
+			var $initBadge = $('<span class="init-badge" title="Clic para editar Iniciativa"' + badgeColor + '>' + c.init + '</span>');
+			var $nameLbl = $('<span class="init-name-lbl editable-field" title="Clic para editar nombre">' + (c.isEnemy ? '💀 ' : '🛡️ ') + c.name + ' ✏️</span>');
+
+			// Edición inline del nombre del personaje / enemigo (sincronizado con su ficha del mapa y selectores de acción)
+			$nameLbl.on("click", function() {
+				var $input = $('<input type="text" class="init-inline-input" />').val(c.name);
+				$(this).replaceWith($input);
+				$input.focus().select();
+				var finished = false;
+				function commitName() {
+					if (finished) return;
+					finished = true;
+					var newName = $.trim($input.val());
+					if (newName && newName !== c.name) {
+						var oldName = c.name;
+						c.name = newName;
+						if (c.tokenId && svgCnv && typeof svgCnv.updateTokenName === 'function') {
+							svgCnv.updateTokenName(c.tokenId, newName, oldName);
+						}
+						addLog('✏️ Nombre actualizado: <b>' + oldName + '</b> ➔ <b>' + newName + '</b>.');
+					}
+					renderInitiative();
+				}
+				$input.on("blur", commitName);
+				$input.on("keydown", function(e) {
+					if (e.key === "Enter" || e.keyCode === 13) commitName();
+					else if (e.key === "Escape" || e.keyCode === 27) { finished = true; renderInitiative(); }
+				});
+			});
+
+			// Edición inline de Iniciativa al hacer clic en el número
+			$initBadge.on("click", function() {
+				var $input = $('<input type="number" class="hp-inline-input" />').val(c.init);
+				$(this).replaceWith($input);
+				$input.focus().select();
+				var finished = false;
+				function commitInit() {
+					if (finished) return;
+					finished = true;
+					var newInit = parseInt($input.val(), 10);
+					if (!isNaN(newInit) && newInit !== c.init) {
+						c.init = newInit;
+						combatants.sort(function(a, b) { return b.init - a.init; });
+						addLog('⚡ Iniciativa de <b>' + c.name + '</b> cambiada a <b>' + newInit + '</b>.');
+					}
+					renderInitiative();
+				}
+				$input.on("blur", commitInit);
+				$input.on("keydown", function(e) {
+					if (e.key === "Enter" || e.keyCode === 13) commitInit();
+					else if (e.key === "Escape" || e.keyCode === 27) { finished = true; renderInitiative(); }
+				});
+			});
+
+			$li.append($initBadge, $nameLbl);
 
 			var $hpCtrl = $('<div class="init-hp-controls"></div>');
-			$hpCtrl.append('<span class="hp-pill' + (isDead ? ' dead' : '') + '">' + c.hp + ' HP</span>');
+			var $hpPill = $('<span class="hp-pill editable-field' + (isDead ? ' dead' : '') + '" title="Clic para escribir HP directamente">' + c.hp + ' HP</span>');
+
+			// Edición inline de los HP al hacer clic sobre el indicador de HP
+			$hpPill.on("click", function() {
+				var $input = $('<input type="number" class="hp-inline-input" />').val(c.hp);
+				$(this).replaceWith($input);
+				$input.focus().select();
+				var finished = false;
+				function commitHp() {
+					if (finished) return;
+					finished = true;
+					var newHp = parseInt($input.val(), 10);
+					if (!isNaN(newHp) && newHp !== c.hp) {
+						var diff = newHp - c.hp;
+						c.hp = newHp;
+						if (diff < 0) {
+							addLog((c.hp <= 0 ? '💀 ' : '💔 ') + '<b>' + c.name + '</b> pierde <b>' + Math.abs(diff) + ' HP</b> (<b>' + c.hp + ' HP</b>).');
+						} else {
+							addLog('💚 <b>' + c.name + '</b> recupera <b>' + diff + ' HP</b> (<b>' + c.hp + ' HP</b>).');
+						}
+					}
+					renderInitiative();
+				}
+				$input.on("blur", commitHp);
+				$input.on("keydown", function(e) {
+					if (e.key === "Enter" || e.keyCode === 13) commitHp();
+					else if (e.key === "Escape" || e.keyCode === 27) { finished = true; renderInitiative(); }
+				});
+			});
+
 			var $btnMinus = $('<button type="button" class="btn-hp" title="Restar 1 HP">-</button>');
 			var $btnPlus = $('<button type="button" class="btn-hp" title="Sumar 1 HP">+</button>');
 			var $btnDel = $('<button type="button" class="btn-hp" title="Eliminar">×</button>');
 
-			$btnMinus.on("click", function() { c.hp -= 1; renderInitiative(); });
-			$btnPlus.on("click", function() { c.hp += 1; renderInitiative(); });
+			$btnMinus.on("click", function() {
+				c.hp -= 1;
+				renderInitiative();
+				if (c.hp <= 0) {
+					addLog('💀 <b>' + c.name + '</b> pierde 1 HP y cae a <b>' + c.hp + ' HP</b>.');
+				} else {
+					addLog('💔 <b>' + c.name + '</b> pierde 1 HP (<b>' + c.hp + ' HP</b>).');
+				}
+			});
+			$btnPlus.on("click", function() {
+				c.hp += 1;
+				renderInitiative();
+				addLog('💚 <b>' + c.name + '</b> recupera 1 HP (<b>' + c.hp + ' HP</b>).');
+			});
 			$btnDel.on("click", function() {
 				combatants.splice(idx, 1);
 				if (currentTurnIndex >= combatants.length) currentTurnIndex = 0;
 				renderInitiative();
 			});
 
-			$hpCtrl.append($btnMinus, $btnPlus, $btnDel);
+			$hpCtrl.append($hpPill, $btnMinus, $btnPlus, $btnDel);
 			$li.append($hpCtrl);
 			$list.append($li);
 		});

@@ -1,5 +1,5 @@
 /* ==========================================================================
-   RoleDesk — Tablero Táctico D&D (Dark Fantasy Theme)
+   RoleDesk — Tablero Táctico D&D (Dark Fantasy Theme — Compact UI)
    ========================================================================== */
 
 :root {
@@ -33,102 +33,103 @@ body {
     background-image: radial-gradient(circle at 50% 0%, #1e2536 0%, #0b0d13 75%);
     color: var(--text-main);
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-    font-size: 13px;
+    font-size: 12px;
     display: flex;
     flex-direction: column;
 }
 
 /* ==========================================================================
-   CABECERA Y BARRA DE HERRAMIENTAS SUPERIOR
+   CABECERA COMPACTA Y BARRA DE HERRAMIENTAS SUPERIOR
    ========================================================================== */
 
 .vtt-header {
     background: linear-gradient(180deg, #1a202c 0%, #121620 100%);
-    border-bottom: 2px solid var(--gold-dark);
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.65);
-    padding: 8px 18px;
+    border-bottom: 1.5px solid var(--gold-dark);
+    box-shadow: 0 3px 14px rgba(0, 0, 0, 0.65);
+    padding: 4px 12px;
     display: flex;
     align-items: center;
     justify-content: space-between;
     flex-wrap: wrap;
-    gap: 14px;
+    gap: 8px;
     z-index: 10;
 }
 
 .vtt-brand {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 6px;
 }
 
 .brand-icon {
-    font-size: 28px;
-    filter: drop-shadow(0 2px 6px rgba(212, 175, 55, 0.5));
+    font-size: 20px;
+    filter: drop-shadow(0 2px 4px rgba(212, 175, 55, 0.5));
 }
 
 .vtt-brand h1 {
     margin: 0;
     font-family: 'Cinzel', Georgia, serif;
-    font-size: 21px;
+    font-size: 16px;
     font-weight: 700;
-    letter-spacing: 1px;
+    letter-spacing: 0.8px;
     color: var(--gold-primary);
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
-}
-
-.brand-subtitle {
-    display: block;
-    font-size: 11px;
-    color: var(--text-muted);
-    letter-spacing: 0.5px;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
 }
 
 .vtt-toolbar {
     display: flex;
     align-items: center;
     flex-wrap: wrap;
-    gap: 12px;
+    gap: 6px;
 }
 
 .toolbar-group {
     display: flex;
     align-items: center;
-    gap: 6px;
-    background: rgba(11, 13, 19, 0.55);
+    gap: 4px;
+    background: rgba(11, 13, 19, 0.6);
     border: 1px solid var(--border-subtle);
-    padding: 5px 10px;
-    border-radius: 8px;
+    padding: 3px 7px;
+    border-radius: 6px;
+}
+
+.toolbar-sep {
+    width: 1px;
+    height: 18px;
+    background: var(--border-subtle);
+    margin: 0 2px;
 }
 
 .group-label {
-    font-size: 10px;
+    font-size: 9.5px;
     text-transform: uppercase;
-    letter-spacing: 0.7px;
+    letter-spacing: 0.5px;
     color: var(--gold-light);
-    opacity: 0.75;
-    margin-right: 4px;
+    opacity: 0.8;
+    margin-right: 2px;
     font-weight: 600;
 }
 
 /* ==========================================================================
-   BOTONES E INPUTS
+   BOTONES E INPUTS COMPACTOS
    ========================================================================== */
 
 .btn {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 5px;
-    padding: 6px 12px;
-    border-radius: 6px;
+    gap: 4px;
+    padding: 4px 8px;
+    border-radius: 5px;
     border: 1px solid transparent;
     font-family: inherit;
-    font-size: 12px;
+    font-size: 11px;
     font-weight: 600;
     cursor: pointer;
-    transition: all 0.15s ease;
+    transition: all 0.12s ease;
     color: #fff;
     text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
+    white-space: nowrap;
 }
 
 .btn:hover {
@@ -140,9 +141,10 @@ body {
     transform: translateY(0);
 }
 
-.btn-sm {
-    padding: 4px 9px;
-    font-size: 11px;
+.btn-sm,
+.btn-xs {
+    padding: 3px 6px;
+    font-size: 10.5px;
 }
 
 .btn-attack {
@@ -183,7 +185,7 @@ body {
     background: #334155;
     border-color: var(--gold-primary);
     color: var(--gold-light);
-    box-shadow: 0 0 8px rgba(212, 175, 55, 0.35);
+    box-shadow: 0 0 6px rgba(212, 175, 55, 0.35);
 }
 
 .btn-danger {
@@ -202,9 +204,9 @@ body {
     background-color: var(--bg-input);
     color: var(--text-main);
     border: 1px solid var(--border-subtle);
-    border-radius: 5px;
-    padding: 5px 8px;
-    font-size: 12px;
+    border-radius: 4px;
+    padding: 3px 6px;
+    font-size: 11px;
     font-family: inherit;
     outline: none;
     transition: border-color 0.15s ease;
@@ -216,81 +218,113 @@ body {
     box-shadow: 0 0 0 2px rgba(212, 175, 55, 0.2);
 }
 
+.w-full {
+    width: 100%;
+}
+
 .input-sm {
-    width: 55px;
+    width: 48px;
     text-align: center;
 }
 
 .input-xs {
-    width: 46px;
+    width: 42px;
+    text-align: center;
+}
+
+.input-xxs {
+    width: 38px;
+    padding: 2px 3px;
     text-align: center;
 }
 
 /* ==========================================================================
-   WORKSPACE: SIDEBAR + STAGE
+   WORKSPACE: SIDEBAR COMPACTO + MAPA PROTAGONISTA
    ========================================================================== */
 
 .vtt-workspace {
     display: flex;
     flex: 1;
-    gap: 14px;
-    padding: 14px;
+    gap: 10px;
+    padding: 8px 10px;
     align-items: flex-start;
 }
 
 .vtt-sidebar {
-    width: 310px;
+    width: 248px;
     flex-shrink: 0;
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 7px;
 }
 
 .vtt-card {
     background: var(--bg-card);
     border: 1px solid var(--border-subtle);
-    border-radius: 10px;
-    padding: 12px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+    border-radius: 8px;
+    padding: 8px 9px;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.4);
 }
 
 .card-header-flex {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 8px;
+    margin-bottom: 5px;
+    border-bottom: 1px solid rgba(212, 175, 55, 0.2);
+    padding-bottom: 3px;
 }
 
 .card-header-flex .card-title {
     margin-bottom: 0;
+    border-bottom: none;
+    padding-bottom: 0;
 }
 
 .card-title {
-    margin: 0 0 10px 0;
+    margin: 0 0 6px 0;
     font-family: 'Cinzel', Georgia, serif;
-    font-size: 13px;
+    font-size: 11.5px;
     font-weight: 700;
     color: var(--gold-primary);
-    border-bottom: 1px solid rgba(212, 175, 55, 0.25);
-    padding-bottom: 5px;
-    letter-spacing: 0.5px;
+    border-bottom: 1px solid rgba(212, 175, 55, 0.2);
+    padding-bottom: 3px;
+    letter-spacing: 0.4px;
 }
 
-.form-row {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-    margin-bottom: 8px;
+.compact-grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 5px;
 }
 
-.form-row:last-child {
-    margin-bottom: 0;
-}
-
-.form-row label {
-    font-size: 11px;
+.tiny-label {
+    display: block;
+    font-size: 10px;
     color: var(--text-muted);
-    font-weight: 500;
+    margin-bottom: 2px;
+}
+
+.compact-details {
+    margin-top: 6px;
+    border-top: 1px dashed rgba(255, 255, 255, 0.1);
+    padding-top: 4px;
+}
+
+.compact-details summary {
+    font-size: 10.5px;
+    color: var(--gold-light);
+    cursor: pointer;
+    user-select: none;
+    opacity: 0.85;
+}
+
+.compact-details summary:hover {
+    opacity: 1;
+}
+
+.details-body {
+    margin-top: 5px;
 }
 
 /* ==========================================================================
@@ -300,37 +334,37 @@ body {
 .bg-palette {
     display: flex;
     align-items: center;
-    flex-wrap: wrap;
-    gap: 5px;
+    justify-content: space-between;
+    gap: 3px;
 }
 
 .swatch-btn {
-    width: 24px;
-    height: 24px;
-    border-radius: 5px;
+    width: 21px;
+    height: 21px;
+    border-radius: 4px;
     border: 1.5px solid var(--border-subtle);
     cursor: pointer;
     padding: 0;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    font-size: 12px;
+    font-size: 11px;
     background: var(--bg-input);
     transition: transform 0.12s ease, border-color 0.12s ease;
 }
 
 .swatch-btn:hover,
 .swatch-btn.active {
-    transform: scale(1.12);
+    transform: scale(1.1);
     border-color: var(--gold-primary);
 }
 
 .color-picker-sm {
-    width: 28px;
-    height: 26px;
+    width: 23px;
+    height: 21px;
     padding: 0;
     border: 1px solid var(--border-subtle);
-    border-radius: 5px;
+    border-radius: 4px;
     background: none;
     cursor: pointer;
 }
@@ -338,35 +372,33 @@ body {
 .shape-options-row {
     display: flex;
     align-items: center;
-    gap: 6px;
-    margin-bottom: 6px;
+    gap: 4px;
+    margin-bottom: 5px;
 }
 
 .shape-btn-row {
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 5px;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 4px;
 }
 
 /* ==========================================================================
-   LANZADOR DE DADOS D&D
+   LANZADOR DE DADOS D&D COMPACTO (1 FILA)
    ========================================================================== */
 
-.dice-mod-row {
+.dice-mod-inline {
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    gap: 6px;
-    margin-bottom: 8px;
-    font-size: 11px;
+    gap: 3px;
+    font-size: 10px;
     color: var(--text-muted);
 }
 
 .dice-grid {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 6px;
-    margin-bottom: 8px;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 3px;
+    margin-bottom: 5px;
 }
 
 .btn-die {
@@ -375,22 +407,20 @@ body {
     color: var(--gold-light);
     font-family: 'Cinzel', Georgia, serif;
     font-weight: 700;
-    font-size: 13px;
-    padding: 7px 4px;
-    border-radius: 6px;
+    font-size: 10.5px;
+    padding: 4px 1px;
+    border-radius: 4px;
     cursor: pointer;
-    transition: all 0.15s ease;
+    transition: all 0.12s ease;
 }
 
 .btn-die:hover {
     border-color: var(--gold-primary);
     background: #2d374d;
     transform: translateY(-1px);
-    box-shadow: 0 2px 8px rgba(212, 175, 55, 0.25);
 }
 
 .btn-d20 {
-    grid-column: span 2;
     background: linear-gradient(145deg, #7c2d12, #451a03);
     border-color: #f97316;
     color: #ffedd5;
@@ -399,11 +429,11 @@ body {
 .dice-result-banner {
     background: var(--bg-input);
     border: 1px solid var(--border-subtle);
-    border-radius: 6px;
-    padding: 8px 10px;
+    border-radius: 5px;
+    padding: 4px 6px;
     text-align: center;
-    font-size: 12px;
-    min-height: 36px;
+    font-size: 11px;
+    min-height: 24px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -427,16 +457,16 @@ body {
     background: rgba(212, 175, 55, 0.15);
     border: 1px solid var(--gold-primary);
     color: var(--gold-light);
-    font-size: 10px;
+    font-size: 9.5px;
     font-weight: 700;
-    padding: 2px 7px;
-    border-radius: 12px;
+    padding: 1px 6px;
+    border-radius: 10px;
 }
 
 .init-add-row {
     display: flex;
-    gap: 4px;
-    margin-bottom: 8px;
+    gap: 3px;
+    margin-bottom: 5px;
 }
 
 .init-add-row #init-name {
@@ -446,13 +476,13 @@ body {
 
 .init-list {
     list-style: none;
-    margin: 0 0 8px 0;
+    margin: 0 0 5px 0;
     padding: 0;
-    max-height: 155px;
+    max-height: 140px;
     overflow-y: auto;
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    gap: 3px;
 }
 
 .init-item {
@@ -461,10 +491,10 @@ body {
     justify-content: space-between;
     background: var(--bg-input);
     border: 1px solid var(--border-subtle);
-    border-radius: 5px;
-    padding: 5px 8px;
-    font-size: 12px;
-    gap: 6px;
+    border-radius: 4px;
+    padding: 3px 6px;
+    font-size: 11px;
+    gap: 4px;
 }
 
 .init-item.active-turn {
@@ -477,10 +507,10 @@ body {
     background: #262f42;
     color: var(--gold-light);
     font-weight: 700;
-    padding: 2px 6px;
-    border-radius: 4px;
-    font-size: 11px;
-    min-width: 24px;
+    padding: 1px 5px;
+    border-radius: 3px;
+    font-size: 10.5px;
+    min-width: 22px;
     text-align: center;
 }
 
@@ -495,14 +525,14 @@ body {
 .init-hp-controls {
     display: flex;
     align-items: center;
-    gap: 3px;
+    gap: 2px;
 }
 
 .hp-pill {
     color: #4ade80;
     font-weight: 700;
-    font-size: 11px;
-    margin-right: 2px;
+    font-size: 10.5px;
+    margin-right: 1px;
 }
 
 .hp-pill.dead {
@@ -515,10 +545,10 @@ body {
     border: 1px solid #3b4761;
     color: #fff;
     border-radius: 3px;
-    width: 18px;
-    height: 18px;
-    line-height: 14px;
-    font-size: 11px;
+    width: 16px;
+    height: 16px;
+    line-height: 13px;
+    font-size: 10px;
     padding: 0;
     cursor: pointer;
 }
@@ -530,7 +560,7 @@ body {
 .init-actions {
     display: flex;
     justify-content: space-between;
-    gap: 6px;
+    gap: 5px;
 }
 
 /* ==========================================================================
@@ -538,50 +568,40 @@ body {
    ========================================================================== */
 
 .upload-form {
-    margin-bottom: 10px;
-}
-
-.upload-form:last-child {
-    margin-bottom: 0;
-}
-
-.upload-form label {
-    display: block;
-    font-size: 11px;
-    color: var(--text-muted);
-    margin-bottom: 4px;
+    margin: 0;
 }
 
 .file-row {
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: 4px;
 }
 
 .vtt-file {
-    font-size: 11px;
+    font-size: 10px;
     color: var(--text-muted);
     width: 100%;
+    min-width: 0;
 }
 
 .combat-log {
     background: var(--bg-input);
     border: 1px solid var(--border-subtle);
-    border-radius: 6px;
-    padding: 8px;
-    height: 115px;
+    border-radius: 5px;
+    padding: 5px 7px;
+    height: 105px;
     overflow-y: auto;
-    font-size: 11px;
+    font-size: 10.5px;
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    gap: 3px;
 }
 
 .log-entry {
     color: var(--text-muted);
     border-bottom: 1px dashed rgba(255, 255, 255, 0.06);
-    padding-bottom: 3px;
-    line-height: 1.35;
+    padding-bottom: 2px;
+    line-height: 1.3;
 }
 
 .log-entry b {
@@ -589,7 +609,7 @@ body {
 }
 
 /* ==========================================================================
-   ÁREA CENTRAL: TABLERO DEL DUNGEON Y ELEMENTOS SVG
+   ÁREA CENTRAL: TABLERO DEL DUNGEON PROTAGONISTA
    ========================================================================== */
 
 .vtt-stage {
@@ -600,28 +620,28 @@ body {
     align-items: center;
 }
 
+.canvas-wrapper {
+    width: 100%;
+    max-width: 1380px;
+    border: 2.5px solid var(--gold-dark);
+    border-radius: 7px;
+    box-shadow: 0 10px 35px rgba(0, 0, 0, 0.85), 0 0 0 1px rgba(243, 229, 171, 0.15);
+    background: #090b10;
+    line-height: 0;
+}
+
 .stage-hint {
-    background: rgba(28, 34, 48, 0.85);
+    background: rgba(28, 34, 48, 0.75);
     border: 1px solid var(--border-subtle);
     color: var(--text-muted);
-    padding: 6px 14px;
-    border-radius: 20px;
-    margin-bottom: 10px;
-    font-size: 11.5px;
+    padding: 3px 12px;
+    border-radius: 14px;
+    margin-top: 5px;
+    font-size: 10.5px;
 }
 
 .stage-hint b {
     color: var(--gold-light);
-}
-
-.canvas-wrapper {
-    width: 100%;
-    max-width: 1256px;
-    border: 3px solid var(--gold-dark);
-    border-radius: 8px;
-    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.85), 0 0 0 1px rgba(243, 229, 171, 0.15);
-    background: #090b10;
-    line-height: 0;
 }
 
 #marco {
@@ -670,7 +690,92 @@ body {
     cursor: grabbing;
 }
 
-.point-rotation {
+.point-rotation,
+.token-rotation {
     cursor: url("../images/rotate.png") 10 10, crosshair;
     touch-action: none;
+}
+
+#svg-edit polyline {
+    cursor: move !important;
+    pointer-events: stroke;
+}
+
+#svg-edit foreignObject select.actor-select {
+    margin-bottom: 3px;
+    border-color: #94a3b8;
+    background: rgba(30, 41, 59, 0.95);
+    color: #fde047;
+    font-weight: 600;
+}
+
+#svg-edit foreignObject select.target-select {
+    margin-top: 3px;
+    border-color: #38bdf8;
+    background: rgba(15, 23, 42, 0.95);
+    color: #7dd3fc;
+    font-weight: 600;
+}
+
+.editable-field {
+    cursor: pointer;
+}
+.editable-field:hover {
+    color: #fde047;
+    text-decoration: underline;
+}
+.init-inline-input {
+    background: #0f141e;
+    color: #f8fafc;
+    border: 1px solid #d4af37;
+    border-radius: 4px;
+    font-size: 11px;
+    padding: 1px 4px;
+    width: 90px;
+    outline: none;
+}
+.hp-inline-input {
+    background: #0f141e;
+    color: #fde047;
+    border: 1px solid #d4af37;
+    border-radius: 4px;
+    font-size: 11px;
+    padding: 1px 3px;
+    width: 44px;
+    text-align: center;
+    outline: none;
+}
+.action-select-row {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    width: 100%;
+}
+
+.action-select-row select {
+    flex: 1;
+    min-width: 0;
+}
+
+.btn-repeat-action {
+    background: rgba(30, 41, 59, 0.95);
+    border: 1px solid var(--gold-primary);
+    color: var(--gold-light);
+    border-radius: 4px;
+    width: 22px;
+    height: 22px;
+    padding: 0;
+    font-size: 10px;
+    line-height: 1;
+    cursor: pointer;
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.7);
+}
+
+.btn-repeat-action:hover {
+    background: #334155;
+    transform: scale(1.06);
 }

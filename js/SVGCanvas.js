@@ -157,17 +157,148 @@ function SVGCanvas(interact, width, height, flexiName, analogName, gifName, id, 
             return foreignEl;
 		}
 	
+        function logGroupCombatAction(groupEl) {
+            if (!groupEl || typeof window.addLog !== 'function') return;
+            var idEl = groupEl.getAttribute('id') || '';
+            var actionSel = document.getElementById(idEl + 's');
+            var selText = (actionSel && actionSel.selectedIndex >= 0) ? actionSel.options[actionSel.selectedIndex].text : '';
+            if (!selText || selText === '...') return;
+
+            var actorName = groupEl.getAttribute('data-actor') || '';
+            var targetName = groupEl.getAttribute('data-target') || '';
+
+            if (idEl.indexOf(that.flexiName) === 0) {
+                if (actorName && targetName) {
+                    window.addLog('⚔️ <b>' + actorName + '</b> ataca a <b>' + targetName + '</b> con <b>' + selText + '</b>.');
+                } else if (actorName) {
+                    window.addLog('⚔️ <b>' + actorName + '</b> realiza ataque: <b>' + selText + '</b>.');
+                } else if (targetName) {
+                    window.addLog('⚔️ Ataque <b>' + selText + '</b> contra <b>' + targetName + '</b>.');
+                } else {
+                    window.addLog('⚔️ Ataque seleccionado: <b>' + selText + '</b>.');
+                }
+            } else if (idEl.indexOf(that.analogName) === 0) {
+                if (actorName && targetName) {
+                    if (actorName === targetName) {
+                        window.addLog('🛡️ <b>' + actorName + '</b> usa <b>' + selText + '</b> sobre sí mismo.');
+                    } else {
+                        window.addLog('🛡️ <b>' + actorName + '</b> usa <b>' + selText + '</b> sobre <b>' + targetName + '</b>.');
+                    }
+                } else if (actorName) {
+                    window.addLog('🛡️ <b>' + actorName + '</b> usa defensa: <b>' + selText + '</b>.');
+                } else if (targetName) {
+                    window.addLog('🛡️ Defensa <b>' + selText + '</b> recibe: <b>' + targetName + '</b>.');
+                } else {
+                    window.addLog('🛡️ Defensa seleccionada: <b>' + selText + '</b>.');
+                }
+            }
+        }
+
 		function onChangeAction(event, clTarget) {
             var target = event.target;
             var idEl = target.getAttribute('class');
             var groupEl = document.getElementById(idEl);
-            groupEl.setAttribute('data-signal', target.options[target.selectedIndex].value);
+            if (groupEl) that.bringToFront(groupEl);
+            var selectedOpt = target.options[target.selectedIndex];
+            groupEl.setAttribute('data-signal', selectedOpt.value);
+            var selText = selectedOpt.text;
+
+            // Si se escoge 'Pergamino mágico' (o una opción marcada como pergamino), usar el pergamino activo en #sel_scroll
+            if (selText === 'Pergamino mágico' || selectedOpt.getAttribute('data-scroll-opt') === '1') {
+                selectedOpt.setAttribute('data-scroll-opt', '1');
+                var scrollSelect = document.getElementById('sel_scroll');
+                var activeScroll = (scrollSelect && scrollSelect.value) ? scrollSelect.value : '';
+                if (activeScroll) {
+                    selText = 'Pergamino: ' + activeScroll;
+                    selectedOpt.text = selText;
+                    groupEl.setAttribute('data-scroll', activeScroll);
+                }
+            }
+
             var textEl = document.getElementById(idEl+clTarget);
-            var selText = target.options[target.selectedIndex].text;
             if (textEl) {
             	textEl.textContent = selText;
             }
+            if (typeof window.addLog === 'function' && selText && selText !== '...') {
+                if (idEl.indexOf(that.flexiName) === 0 || idEl.indexOf(that.analogName) === 0) {
+                    logGroupCombatAction(groupEl);
+                } else if (idEl.indexOf(that.gifName) === 0) {
+                    var tokenTitle = (groupEl && groupEl.getAttribute('data-name')) ? groupEl.getAttribute('data-name') : idEl;
+                    window.addLog('🩸 Estado de <b>' + tokenTitle + '</b>: <b>' + selText + '</b>.');
+                }
+            }
 		}
+
+        function attachRepeatSelectSupport(selEl, onRepeatCallback) {
+            selEl._isOpen = false;
+            selEl._changedWhileOpen = false;
+            selEl.addEventListener('mousedown', function() {
+                selEl._changedWhileOpen = false;
+            });
+            selEl.addEventListener('change', function() {
+                selEl._changedWhileOpen = true;
+                selEl._isOpen = false;
+            });
+            selEl.addEventListener('blur', function() {
+                selEl._isOpen = false;
+            });
+            selEl.addEventListener('click', function(e) {
+                if (!selEl._isOpen) {
+                    selEl._isOpen = true;
+                } else {
+                    selEl._isOpen = false;
+                    if (!selEl._changedWhileOpen && selEl.selectedIndex > 0) {
+                        onRepeatCallback(e);
+                    }
+                }
+            });
+        }
+
+        function createActorSelect(groupEl) {
+            var idEl = groupEl.getAttribute('id');
+            var actorSel = document.createElement('select');
+            actorSel.setAttribute('id', idEl + 'actor');
+            actorSel.setAttribute('class', 'actor-select');
+            actorSel.setAttribute('data-group', idEl);
+            actorSel.addEventListener('change', function(e) {
+                var chosenActor = e.target.value;
+                that.bringToFront(groupEl);
+                groupEl.setAttribute('data-actor', chosenActor);
+                if (chosenActor) {
+                    logGroupCombatAction(groupEl);
+                }
+            });
+            attachRepeatSelectSupport(actorSel, function() {
+                if (actorSel.value) {
+                    that.bringToFront(groupEl);
+                    logGroupCombatAction(groupEl);
+                }
+            });
+            return actorSel;
+        }
+
+        function createTargetSelect(groupEl) {
+            var idEl = groupEl.getAttribute('id');
+            var targetSel = document.createElement('select');
+            targetSel.setAttribute('id', idEl + 'target');
+            targetSel.setAttribute('class', 'target-select');
+            targetSel.setAttribute('data-group', idEl);
+            targetSel.addEventListener('change', function(e) {
+                var chosenTarget = e.target.value;
+                that.bringToFront(groupEl);
+                groupEl.setAttribute('data-target', chosenTarget);
+                if (chosenTarget) {
+                    logGroupCombatAction(groupEl);
+                }
+            });
+            attachRepeatSelectSupport(targetSel, function() {
+                if (targetSel.value) {
+                    that.bringToFront(groupEl);
+                    logGroupCombatAction(groupEl);
+                }
+            });
+            return targetSel;
+        }
 	
 		function addHtml(group, html, width, height, x, y, type, num) {
             var idEl = group.getAttribute('id');
@@ -183,14 +314,205 @@ function SVGCanvas(interact, width, height, flexiName, analogName, gifName, id, 
             html.setAttribute('name',idEl+type);
             html.setAttribute('class',idEl);		
             html.setAttribute('xhtml',xhtml);
+            if (html.nodeName && html.nodeName.toLowerCase() === 'select') {
+                attachRepeatSelectSupport(html, function() {
+                    onChangeAction({ target: html }, 'label');
+                });
+            }
             foreignEl.appendChild(html);
             group.appendChild(foreignEl);
             return foreignEl;
 		}
+
+        function addActionWithActorHtml(group, actionHtml, width, height, x, y, includeTargetInline) {
+            var idEl = group.getAttribute('id');
+            var foreignEl = foreign(idEl + 'f', width, height, x, y);
+            var actorSel = createActorSelect(group);
+            actionHtml.setAttribute('id', idEl + 's');
+            actionHtml.setAttribute('name', idEl + 's');
+            actionHtml.setAttribute('class', idEl);
+            actionHtml.setAttribute('xhtml', xhtml);
+            attachRepeatSelectSupport(actionHtml, function() {
+                onChangeAction({ target: actionHtml }, 'label');
+            });
+
+            var actionRow = document.createElement('div');
+            actionRow.setAttribute('class', 'action-select-row');
+            var repeatBtn = document.createElement('button');
+            repeatBtn.setAttribute('type', 'button');
+            repeatBtn.setAttribute('class', 'btn-repeat-action');
+            repeatBtn.setAttribute('title', 'Repetir acción en la crónica');
+            repeatBtn.textContent = '🔄';
+            repeatBtn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                if (actionHtml.selectedIndex > 0) {
+                    onChangeAction({ target: actionHtml }, 'label');
+                }
+            });
+            actionRow.appendChild(actionHtml);
+            actionRow.appendChild(repeatBtn);
+
+            foreignEl.appendChild(actorSel);
+            foreignEl.appendChild(actionRow);
+            if (includeTargetInline) {
+                var targetSel = createTargetSelect(group);
+                foreignEl.appendChild(targetSel);
+            }
+            group.appendChild(foreignEl);
+            return foreignEl;
+        }
+
+        function addTargetAtTipHtml(group, width, height, x, y) {
+            var idEl = group.getAttribute('id');
+            var foreignEl = foreign(idEl + 'ft', width, height, x, y);
+            var targetSel = createTargetSelect(group);
+            foreignEl.appendChild(targetSel);
+            group.appendChild(foreignEl);
+            return foreignEl;
+        }
+
+        this.refreshActorSelects = function() {
+            if (!that.svg) return;
+            var actors = [];
+            var groups = that.svg.getElementsByTagName('g');
+            for (var i = 0; i < groups.length; i++) {
+                var g = groups[i];
+                if (g.id && g.id.indexOf(that.gifName) === 0) {
+                    var aName = g.getAttribute('data-name') || g.id;
+                    actors.push(aName);
+                }
+            }
+            var actorSelects = that.svg.querySelectorAll('select.actor-select');
+            for (var j = 0; j < actorSelects.length; j++) {
+                var sel = actorSelects[j];
+                var grpId = sel.getAttribute('data-group');
+                var grpEl = grpId ? document.getElementById(grpId) : null;
+                var savedActor = grpEl ? (grpEl.getAttribute('data-actor') || '') : sel.value;
+                while (sel.firstChild) {
+                    sel.removeChild(sel.firstChild);
+                }
+                var optDefault = document.createElement('option');
+                optDefault.value = '';
+                optDefault.text = '👤 Quién lo hace...';
+                sel.appendChild(optDefault);
+                for (var k = 0; k < actors.length; k++) {
+                    var opt = document.createElement('option');
+                    opt.value = actors[k];
+                    opt.text = '👤 ' + actors[k];
+                    if (actors[k] === savedActor) {
+                        opt.selected = true;
+                    }
+                    sel.appendChild(opt);
+                }
+            }
+            var targetSelects = that.svg.querySelectorAll('select.target-select');
+            for (var t = 0; t < targetSelects.length; t++) {
+                var tSel = targetSelects[t];
+                var tGrpId = tSel.getAttribute('data-group');
+                var tGrpEl = tGrpId ? document.getElementById(tGrpId) : null;
+                var savedTarget = tGrpEl ? (tGrpEl.getAttribute('data-target') || '') : tSel.value;
+                while (tSel.firstChild) {
+                    tSel.removeChild(tSel.firstChild);
+                }
+                var optTargetDef = document.createElement('option');
+                optTargetDef.value = '';
+                optTargetDef.text = '🎯 Quién recibe...';
+                tSel.appendChild(optTargetDef);
+                for (var m = 0; m < actors.length; m++) {
+                    var optT = document.createElement('option');
+                    optT.value = actors[m];
+                    optT.text = '🎯 ' + actors[m];
+                    if (actors[m] === savedTarget) {
+                        optT.selected = true;
+                    }
+                    tSel.appendChild(optT);
+                }
+            }
+        };
+
+        this.updateTokenName = function(tokenId, newName, oldName) {
+            if (!tokenId || !newName) return;
+            var groupEl = document.getElementById(tokenId);
+            if (groupEl) {
+                groupEl.setAttribute('data-name', newName);
+                var nameTxt = document.getElementById(tokenId + 'ntxt');
+                if (nameTxt) {
+                    nameTxt.textContent = newName;
+                }
+                var badgeBg = document.getElementById(tokenId + 'bbg');
+                var baseCircle = document.getElementById(tokenId + 'ring');
+                if (badgeBg && baseCircle) {
+                    var cx = parseFloat(baseCircle.getAttribute('cx')) || 637.5;
+                    var badgeWidth = Math.max(88, newName.length * 6.8 + 14);
+                    badgeBg.setAttribute('width', badgeWidth);
+                    badgeBg.setAttribute('x', cx - (badgeWidth / 2));
+                }
+            }
+            if (oldName && that.svg) {
+                var allGroups = that.svg.getElementsByTagName('g');
+                for (var i = 0; i < allGroups.length; i++) {
+                    if (allGroups[i].getAttribute('data-actor') === oldName) {
+                        allGroups[i].setAttribute('data-actor', newName);
+                    }
+                    if (allGroups[i].getAttribute('data-target') === oldName) {
+                        allGroups[i].setAttribute('data-target', newName);
+                    }
+                }
+            }
+            that.refreshActorSelects();
+        };
 	
 		function appendChild(node) {
 			that.svg.appendChild(node);
 		}
+
+        this.bringToFront = function(targetNode) {
+            if (!that.svg || !targetNode) return;
+            var node = targetNode.correspondingUseElement || targetNode;
+            if (node.nodeType !== 1) return;
+
+            // Si se ha pulsado un punto de control (.point-handle o .point-rotation) que cuelga de that.svg
+            var parentAttr = node.getAttribute ? node.getAttribute('data-parent') : null;
+            if (parentAttr) {
+                var parentShape = document.getElementById(parentAttr);
+                if (parentShape) {
+                    node = parentShape;
+                }
+            }
+
+            // Subir hasta el grupo <g> hijo directo de that.svg
+            var groupNode = node;
+            while (groupNode && groupNode.parentNode && groupNode.parentNode !== that.svg) {
+                groupNode = groupNode.parentNode;
+            }
+            if (!groupNode || groupNode.parentNode !== that.svg || groupNode.nodeName !== 'g') {
+                return;
+            }
+
+            // Localizar todos los controles externos (<use data-parent="...">) asociados a la figura de este grupo
+            var shapeId = (groupNode.firstChild && groupNode.firstChild.id) ? groupNode.firstChild.id : '';
+            var handles = [];
+            if (shapeId) {
+                var allUses = that.svg.getElementsByTagName('use');
+                for (var i = 0; i < allUses.length; i++) {
+                    if (allUses[i].getAttribute('data-parent') === shapeId) {
+                        handles.push(allUses[i]);
+                    }
+                }
+            }
+
+            // Comprobar si ya es el último <g> en primer plano
+            var allGroups = that.svg.getElementsByTagName('g');
+            var isLastGroup = (allGroups.length > 0 && allGroups[allGroups.length - 1] === groupNode);
+            if (!isLastGroup) {
+                that.svg.appendChild(groupNode);
+            }
+            for (var j = 0; j < handles.length; j++) {
+                if (that.svg.lastElementChild !== handles[j]) {
+                    that.svg.appendChild(handles[j]);
+                }
+            }
+        };
 	
 		function applyTransforms(event) {
             that.rootMatrix = that.svg.getScreenCTM();
@@ -338,6 +660,13 @@ function SVGCanvas(interact, width, height, flexiName, analogName, gifName, id, 
                                     foreign.setAttribute('y',point.y+5);
                                 }
                             }
+                            if (i === len - 1) {
+                                var foreignTip = document.getElementById(parent.parentNode.id+'ft');
+                                if (foreignTip) {
+                                    foreignTip.setAttribute('x',point.x-20);
+                                    foreignTip.setAttribute('y',point.y+6);
+                                }
+                            }
                             i+=1;
                         }
                         var rotX = parent.points.getItem(0).x + (10 * Math.cos(baseAngle));
@@ -389,7 +718,7 @@ function SVGCanvas(interact, width, height, flexiName, analogName, gifName, id, 
                     initX = point.x;
                     initY = point.y;
                 }                
-                if (i===1 && item.points.numberOfItems === 3 && item.nodeName === 'polyline') {
+                if (i === Math.floor(item.points.numberOfItems / 2) && item.nodeName === 'polyline') {
                     var handleRot = document.getElementById(id+'rot');
                     if (!handleRot) {
                         var handleRot = document.createElementNS(svgNS, 'use');
@@ -472,6 +801,7 @@ function SVGCanvas(interact, width, height, flexiName, analogName, gifName, id, 
                     if (!that.rootMatrix) {
                         applyTransforms(event);
                     }
+                    that.bringToFront(event.target);
                     that.svg.setAttribute('class', 'dragging');
                 },
                 onmove: function (event) {
@@ -507,6 +837,7 @@ function SVGCanvas(interact, width, height, flexiName, analogName, gifName, id, 
                     if (!that.rootMatrix) {
                         applyTransforms(event);
                     }
+                    that.bringToFront(event.target);
                     that.svg.setAttribute('class', 'dragging');
 
                 },
@@ -526,6 +857,15 @@ function SVGCanvas(interact, width, height, flexiName, analogName, gifName, id, 
                             y += event.dy / that.rootMatrix.d;
                             foreign.setAttribute('x',x);
                             foreign.setAttribute('y',y);
+                        }
+                        var foreignTip = document.getElementById(parentId+'ft');
+                        if (foreignTip) {
+                            var tx = parseFloat(foreignTip.getAttribute('x'));
+                            var ty = parseFloat(foreignTip.getAttribute('y'));
+                            tx += event.dx / that.rootMatrix.a;
+                            ty += event.dy / that.rootMatrix.d;
+                            foreignTip.setAttribute('x',tx);
+                            foreignTip.setAttribute('y',ty);
                         }
                     }
 					var i = 0;
@@ -592,6 +932,14 @@ function SVGCanvas(interact, width, height, flexiName, analogName, gifName, id, 
 		}
 	
 		function addGeneralEvents() {
+            that.svg.addEventListener('click', function(e) {
+                var t = e.target;
+                if (!t) return;
+                var tag = t.nodeName ? t.nodeName.toLowerCase() : '';
+                if (tag === 'select' || tag === 'option') return;
+                that.bringToFront(t);
+            });
+
             that.interact(that.svg)
                 .on('down', function(e) { applyTransforms(e) })
                 .on('pointerdown', function(e) { applyTransforms(e) })
@@ -604,6 +952,7 @@ function SVGCanvas(interact, width, height, flexiName, analogName, gifName, id, 
                     if (!that.rootMatrix) {
                         applyTransforms(event);
                     }
+                    that.bringToFront(event.target);
                     that.svg.setAttribute('class', 'dragging');
                 },
                 onmove: function (event) {
@@ -672,26 +1021,37 @@ function SVGCanvas(interact, width, height, flexiName, analogName, gifName, id, 
                     }
 
                     if (parent.indexOf(that.flexiName) !== -1) {
-                        if (i===0) {
+                        if (i === 0) {
                             var foreignId = parentEl.parentNode.id + 'f',
                             foreignEl = document.getElementById(foreignId);
-                            foreignEl.setAttribute('x',point.x-30);
-                            foreignEl.setAttribute('y',point.y+5);   
-                            
-                            var useRot = document.getElementById(parent+'rot');  
+                            if (foreignEl) {
+                                foreignEl.setAttribute('x', point.x - 30);
+                                foreignEl.setAttribute('y', point.y + 5);
+                            }
+                        }
+                        if (i === 0 || i === Math.floor(parentEl.points.numberOfItems / 2)) {
+                            var useRot = document.getElementById(parent + 'rot');
                             if (useRot) {
-                                var center = parentEl.points.getItem(Math.floor(parentEl.points.numberOfItems/2)),
-                                angle = Math.atan2(center.y-point.y,center.x-point.x),
-                                newX = point.x - (10 * Math.cos(angle)),
-                                newY = point.y - (10 * Math.sin(angle));
-                                useRot.setAttribute('x',newX);
-                                useRot.setAttribute('y',newY);
+                                var pStart = parentEl.points.getItem(0),
+                                center = parentEl.points.getItem(Math.floor(parentEl.points.numberOfItems / 2)),
+                                angle = Math.atan2(center.y - pStart.y, center.x - pStart.x),
+                                newX = pStart.x - (10 * Math.cos(angle)),
+                                newY = pStart.y - (10 * Math.sin(angle));
+                                useRot.setAttribute('x', newX);
+                                useRot.setAttribute('y', newY);
                                 useRot.x.baseVal.value = newX;
                                 useRot.y.baseVal.value = newY;
 
-                                var radius = Math.sqrt(Math.pow(center.x-newX,2)+Math.pow(center.y -newY,2));
-                                var elementCenter  = { pageX: center.x, pageY: center.y };
+                                var radius = Math.sqrt(Math.pow(center.x - newX, 2) + Math.pow(center.y - newY, 2));
+                                var elementCenter = { pageX: center.x, pageY: center.y };
                                 rotateEvent(useRot, radius, elementCenter);
+                            }
+                        }
+                        if (i === parentEl.points.numberOfItems - 1) {
+                            var foreignTipEl = document.getElementById(parentEl.parentNode.id + 'ft');
+                            if (foreignTipEl) {
+                                foreignTipEl.setAttribute('x', point.x - 20);
+                                foreignTipEl.setAttribute('y', point.y + 6);
                             }
                         }
                     }
@@ -699,54 +1059,12 @@ function SVGCanvas(interact, width, height, flexiName, analogName, gifName, id, 
                 },
                 onend: function (event) {
                     that.svg.setAttribute('class', '');
-
-                    var index = parseInt(event.target.getAttribute('data-index'),10)|| 0,
-                        parent = event.target.getAttribute('data-parent'),
+                    var parent = event.target.getAttribute('data-parent'),
                         item = document.getElementById(parent);
                     if (!item || !item.points) {
                         return;
                     }
-                    var points = item.points,                        
-                        originalNumberOfPoints = points.numberOfItems,
-                        point = points.getItem(index),
-                        x = 0,
-                        y = 0,
-                        insertBefore = 0,
-                        pointAfter = null,
-                        pointBefore = null,
-                        unclonable = event.target.getAttribute('data-unclon') || "";
-
-                    if ((item.nodeName === "polyline") && (event.dx !== 0) && (event.dy !== 0)) {							
-                        if (index !== 0 && index !== (points.numberOfItems -1) && unclonable === "") {
-                            pointAfter = points.getItem(index+1);
-                            pointBefore = points.getItem(index-1);
-                            insertBefore = index+1;	
-
-                            var newPoint = that.svg.createSVGPoint(), newPoint2 = that.svg.createSVGPoint();
-
-                            x = (0.5 * (point.x + pointAfter.x));
-                            y = (0.5 * (point.y + pointAfter.y));
-
-                            newPoint.x = x;
-                            newPoint.y = y;
-                            item.points.insertItemBefore(newPoint,insertBefore);
-
-                            x = (0.5 * (point.x + pointBefore.x));
-                            y = (0.5 * (point.y + pointBefore.y));
-
-                            newPoint2.x = x;
-                            newPoint2.y = y;							
-                            item.points.insertItemBefore(newPoint2,index);
-
-                            that.removeNodes(originalNumberOfPoints,parent);
-                            var handleRot = document.getElementById(item.id+'rot');
-                            if (handleRot) {
-                                that.svg.removeChild(handleRot);
-                            }
-                            addHandles(item, true);
-                            redoPoints();                            
-                        }								
-                    }
+                    redoPoints();
                     item.initAngle = null;
                 }
             })
@@ -815,14 +1133,19 @@ function SVGCanvas(interact, width, height, flexiName, analogName, gifName, id, 
                             	if (parentName !== undefined && parentName !== null && parentName !== "") { 
                             		var nodeTargetToRemove = document.getElementById(parentName);
                                 	if (nodeTargetToRemove) {
+                                		var removedId = nodeTargetToRemove.id;
                                 		that.removeChild(nodeTargetToRemove);
+                                		that.refreshActorSelects();
+                                		if (typeof window.removeCombatantByToken === 'function') {
+                                			window.removeCombatantByToken(removedId);
+                                		}
                                 	}
                                 }
                             }
                         }
                     }
                 }
-                document.body.style.cursor = "default";
+                document.body.style.cursor = "";
             });    
         }
         
@@ -843,7 +1166,7 @@ function SVGCanvas(interact, width, height, flexiName, analogName, gifName, id, 
 		
     	this.toPrint = function() {
             var svgToPrint = document.getElementById(that.container).cloneNode(true);
-            var removable = svgToPrint.querySelectorAll('.point-handle, .point-rotation, foreignObject, .delete');
+            var removable = svgToPrint.querySelectorAll('.point-handle, .point-rotation, .token-rotation, foreignObject, .delete');
             Array.prototype.forEach.call(removable, function(node) {
                 if (node.parentNode) {
                     node.parentNode.removeChild(node);
@@ -857,20 +1180,30 @@ function SVGCanvas(interact, width, height, flexiName, analogName, gifName, id, 
             var bx = 560, by = 470;
             if (groupRecovered) {
                 groupSVG = groupRecovered;
+                var oldForeigns = groupSVG.querySelectorAll('foreignObject');
+                Array.prototype.forEach.call(oldForeigns, function(fn) {
+                    if (fn.parentNode) fn.parentNode.removeChild(fn);
+                });
                 var rChild = groupSVG.querySelector('rect');
                 if (rChild) {
                     bx = parseFloat(rChild.getAttribute('x')) || 560;
                     by = parseFloat(rChild.getAttribute('y')) || 470;
+                    rChild.setAttribute('width', '164');
+                    rChild.setAttribute('height', '86');
+                    rChild.style.cursor = 'move';
                 }
             }
             else {
                 id = that.analogName+id;
                 groupSVG = group(id);		
                 groupSVG.setAttribute('data-signal',0);
-                var abox = rect(bx,by,126,36,"#1b2330","0.92","#d4af37","2",id+'r');
+                groupSVG.setAttribute('data-actor','');
+                groupSVG.setAttribute('data-target','');
+                var abox = rect(bx,by,164,86,"#1b2330","0.92","#d4af37","2",id+'r');
                 abox.setAttributeNS(null, "rx", "6");
                 abox.setAttributeNS(null, "ry", "6");
                 abox.setAttribute('class',groupSVG.id);
+                abox.style.cursor = 'move';
                 groupSVG.appendChild(abox);
                                
             }
@@ -878,14 +1211,23 @@ function SVGCanvas(interact, width, height, flexiName, analogName, gifName, id, 
             var html = that.selectB.cloneNode(true);
             if (html !== undefined) {
                 html.addEventListener('change',function(e) { onChangeAction(e,'label') });
-                addHtml(groupSVG, html, 114,24,bx+6,by+6,'s');
+                addActionWithActorHtml(groupSVG, html, 152, 78, bx+6, by+5, true);
             }	
                             
             appendChild(groupSVG);
+            that.refreshActorSelects();
             addEvents(groupSVG.firstChild);
             if (groupRecovered) {
-            	var optionNumber = parseInt(groupSVG.getAttribute('data-signal'),10);
-            	groupSVG.querySelector('foreignObject').firstChild.options[optionNumber].selected = 'selected';
+            	var optionNumber = parseInt(groupSVG.getAttribute('data-signal'),10) || 0;
+            	var actSel = document.getElementById(groupSVG.id + 's');
+            	if (actSel && actSel.options[optionNumber]) {
+            		actSel.options[optionNumber].selected = 'selected';
+                    var savedScroll = groupSVG.getAttribute('data-scroll');
+                    if (savedScroll && actSel.options[optionNumber].text === 'Pergamino mágico') {
+                        actSel.options[optionNumber].setAttribute('data-scroll-opt', '1');
+                        actSel.options[optionNumber].text = 'Pergamino: ' + savedScroll;
+                    }
+            	}
             }
             return groupSVG;
 		}
@@ -895,15 +1237,22 @@ function SVGCanvas(interact, width, height, flexiName, analogName, gifName, id, 
             
             if (groupRecovered) {
                 groupSVG = groupRecovered;
+                var oldForeigns = groupSVG.querySelectorAll('foreignObject');
+                Array.prototype.forEach.call(oldForeigns, function(fn) {
+                    if (fn.parentNode) fn.parentNode.removeChild(fn);
+                });
                 if (groupSVG.firstChild) {
                     groupSVG.firstChild.setAttributeNS(null, "marker-end", "url(#arrow-attack)");
+                    groupSVG.firstChild.style.cursor = 'move';
                 }
             }
             else {
                 id = that.flexiName+id;
                 groupSVG = group(id);
                 groupSVG.setAttribute('data-signal',0);
-                var flex = polyline("575, 485, 625, 485, 675, 485", id+'pl',"none","1",primaryColor, "4");
+                groupSVG.setAttribute('data-actor','');
+                groupSVG.setAttribute('data-target','');
+                var flex = polyline("540, 485, 637, 485, 735, 485", id+'pl',"none","1",primaryColor, "4");
                 flex.setAttributeNS(null,"stroke-linejoin", "round");
                 flex.setAttributeNS(null,"stroke-linecap", "round");
                 flex.setAttribute('data-primary',primaryColor);
@@ -914,29 +1263,38 @@ function SVGCanvas(interact, width, height, flexiName, analogName, gifName, id, 
                     flex.setAttribute('data-secundary',secundaryColor);
                 }
                 flex.angle = 0;
+                flex.style.cursor = 'move';
                 groupSVG.appendChild(flex); 
             }
             var html = that.selectA.cloneNode(true);
             if (html !== undefined) {
-                var x=0, y=0;
+                var x = 0, y = 0, tx = 0, ty = 0;
                 html.addEventListener('change',function(e) { onChangeAction(e)});
-                if (groupRecovered){
-                    var point = groupSVG.firstChild.points.getItem(0);
-                    x = point.x - 30;
-                    y = point.y + 5;
-                }
-                else {
-                    x = 545;
-                    y = 490;
-                }
-                addHtml(groupSVG, html,115,24,x,y,'s');
+                var polyPts = groupSVG.firstChild.points;
+                var p0 = polyPts.getItem(0);
+                var pLast = polyPts.getItem(polyPts.numberOfItems - 1);
+                x = p0.x - 30;
+                y = p0.y + 5;
+                tx = pLast.x - 20;
+                ty = pLast.y + 6;
+                addActionWithActorHtml(groupSVG, html, 150, 54, x, y, false);
+                addTargetAtTipHtml(groupSVG, 145, 28, tx, ty);
             }
             appendChild(groupSVG);
+            that.refreshActorSelects();
             addHandles(groupSVG.firstChild, false);
             addHandlesEvents(groupSVG.firstChild);
             if (groupRecovered) {
-            	var optionNumber = parseInt(groupSVG.getAttribute('data-signal'),10);
-            	groupSVG.querySelector('foreignObject').firstChild.options[optionNumber].selected = 'selected';
+            	var optionNumber = parseInt(groupSVG.getAttribute('data-signal'),10) || 0;
+            	var actSel = document.getElementById(groupSVG.id + 's');
+            	if (actSel && actSel.options[optionNumber]) {
+            		actSel.options[optionNumber].selected = 'selected';
+                    var savedScroll = groupSVG.getAttribute('data-scroll');
+                    if (savedScroll && actSel.options[optionNumber].text === 'Pergamino mágico') {
+                        actSel.options[optionNumber].setAttribute('data-scroll-opt', '1');
+                        actSel.options[optionNumber].text = 'Pergamino: ' + savedScroll;
+                    }
+            	}
             }
             return groupSVG;
 		}
@@ -1219,6 +1577,15 @@ function SVGCanvas(interact, width, height, flexiName, analogName, gifName, id, 
                     { d: 'M -8 -4 L -4 -4 M 4 -4 L 8 -4 M -7 8 L 7 8', fill: 'none', stroke: '#fef08a', sw: 2.4 }
                 ]
             },
+            basilisco: {
+                name: 'Basilisco', bg: '#14532d', border: '#a3e635', size: 1.35,
+                paths: [
+                    { d: 'M -10 -7 L -15 -16 L -5 -11 L 0 -19 L 5 -11 L 15 -16 L 10 -7 Z', fill: '#a3e635', stroke: '#ecfccb', sw: 1.2 },
+                    { d: 'M -13 -8 L 13 -8 L 15 3 L 7 15 L 0 17 L -7 15 L -15 3 Z', fill: '#15803d', stroke: '#86efac', sw: 1.8 },
+                    { d: 'M -9 -2 L -3 1 L -6 3.5 L -10 0.5 Z M 9 -2 L 3 1 L 6 3.5 L 10 0.5 Z', fill: '#bef264', stroke: '#fef08a', sw: 1 },
+                    { d: 'M -6 10 L -4 14 L -2 10 M 2 10 L 4 14 L 6 10', fill: '#fef9c3', stroke: '#ca8a04', sw: 0.9 }
+                ]
+            },
             contemplador: {
                 name: 'Contemplador', bg: '#4c1d95', border: '#e879f9', size: 1.65,
                 paths: [
@@ -1261,23 +1628,39 @@ function SVGCanvas(interact, width, height, flexiName, analogName, gifName, id, 
             }
         };
 
+        var HERO_CLASS_KEYS = {
+            paladin: 1, mago: 1, hechicero: 1, guerrero: 1, picaro: 1, clerigo: 1,
+            explorador: 1, barbaro: 1, bardo: 1, druida: 1, monje: 1, brujo: 1
+        };
+
         this.heroToken = function(id, classKey, customName, groupRecovered) {
             var groupSVG;
             var cx = 637.5, cy = 487.5;
-            var outerR = 36;
+            var preset = CLASS_PRESETS[classKey] || CLASS_PRESETS.paladin;
+            var sz = preset.size || 1.0;
+            var outerR = Math.round(36 * sz);
+
             if (groupRecovered) {
                 groupSVG = groupRecovered;
+                classKey = groupSVG.getAttribute('data-class') || classKey || 'paladin';
+                preset = CLASS_PRESETS[classKey] || CLASS_PRESETS.paladin;
+                sz = preset.size || 1.0;
+                var oldForeigns = groupSVG.querySelectorAll('foreignObject');
+                Array.prototype.forEach.call(oldForeigns, function(fn) {
+                    if (fn.parentNode) fn.parentNode.removeChild(fn);
+                });
+                var oldRot = document.getElementById(groupSVG.id + 'rot');
+                if (oldRot && oldRot.parentNode) {
+                    oldRot.parentNode.removeChild(oldRot);
+                }
                 var baseCircle = groupSVG.querySelector('circle');
                 if (baseCircle) {
                     cx = parseFloat(baseCircle.getAttribute('cx')) || 637.5;
                     cy = parseFloat(baseCircle.getAttribute('cy')) || 487.5;
-                    outerR = parseFloat(baseCircle.getAttribute('r')) || 36;
+                    outerR = parseFloat(baseCircle.getAttribute('r')) || Math.round(36 * sz);
                 }
             }
             else {
-                var preset = CLASS_PRESETS[classKey] || CLASS_PRESETS.paladin;
-                var sz = preset.size || 1.0;
-                outerR = Math.round(36 * sz);
                 var innerR = Math.round(30 * sz);
                 var displayTitle = customName ? customName : preset.name;
                 id = that.gifName + id;
@@ -1335,12 +1718,18 @@ function SVGCanvas(interact, width, height, flexiName, analogName, gifName, id, 
                 groupSVG.appendChild(nameTxt);
             }
 
+            // Héroes: select de estado abajo, pegado al nombre (cy + outerR + 4)
+            // Monstruos: select de estado arriba, pegado al personaje (cy - outerR - 23)
+            var isHero = !!HERO_CLASS_KEYS[classKey];
+            var selectY = isHero ? (cy + outerR + 4) : (cy - outerR - 23);
+
             var html = that.selectC.cloneNode(true);
             if (html !== undefined) {
                 html.addEventListener('change', function(e) { onChangeAction(e, 'label'); });
-                addHtml(groupSVG, html, 115, 24, cx - 57.5, cy - outerR - 28, 's', 2);
+                addHtml(groupSVG, html, 115, 24, cx - 57.5, selectY, 's', 2);
             }
             appendChild(groupSVG);
+            that.refreshActorSelects();
             addEvents(groupSVG.firstChild);
             if (groupRecovered) {
                 var optionNumber = parseInt(groupSVG.getAttribute('data-signal'), 10) || 0;
@@ -1429,6 +1818,7 @@ function SVGCanvas(interact, width, height, flexiName, analogName, gifName, id, 
                     if (!that.rootMatrix) {
                         applyTransforms(event);
                     }
+                    that.bringToFront(ellipseEl);
                     that.svg.setAttribute('class', 'dragging');
                 },
                 onmove: function(event) {
@@ -1579,6 +1969,7 @@ function SVGCanvas(interact, width, height, flexiName, analogName, gifName, id, 
                     if (!that.rootMatrix) {
                         applyTransforms(event);
                     }
+                    that.bringToFront(pathEl);
                     that.svg.setAttribute('class', 'dragging');
                 },
                 onmove: function(event) {

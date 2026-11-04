@@ -8,25 +8,23 @@
 		<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 		<script type="text/javascript" src="js/interact.js"></script>
 		<script src="http://code.jquery.com/jquery-1.10.1.min.js"></script>
-		<script type="text/javascript" src="js/SVGCanvas.js?v=29"></script>
-		<script type="text/javascript" src="js/main.js?v=29"></script>
-		<link rel="stylesheet" href="css/star.css?v=29" type="text/css"/>
+		<script type="text/javascript" src="js/SVGCanvas.js?v=43"></script>
+		<script type="text/javascript" src="js/main.js?v=43"></script>
+		<link rel="stylesheet" href="css/star.css?v=43" type="text/css"/>
 	</head>
 	<body>
-		<!-- CABECERA Y BARRA DE ACCIONES RÁPIDAS -->
+		<!-- CABECERA COMPACTA Y AGRUPADA -->
 		<header class="vtt-header">
 			<div class="vtt-brand">
 				<span class="brand-icon">🐉</span>
-				<div>
-					<h1>RoleDesk</h1>
-					<span class="brand-subtitle">Tablero Táctico D&amp;D</span>
-				</div>
+				<h1>RoleDesk</h1>
 			</div>
 
 			<div class="vtt-toolbar">
+				<!-- GRUPO 1: PERSONAJES Y ACCIONES -->
 				<div class="toolbar-group">
-					<span class="group-label">Héroes y Criaturas (SVG)</span>
-					<select id="sel_class" class="vtt-select" title="Clase o arquetipo de D&amp;D">
+					<span class="group-label">Fichas y Combate</span>
+					<select id="sel_class" class="vtt-select" title="Clase o criatura de D&amp;D">
 						<optgroup label="⚔️ Clases de Héroe (D&amp;D)">
 							<option value="paladin">🛡️ Paladín</option>
 							<option value="mago">🧙‍♂️ Mago</option>
@@ -60,6 +58,7 @@
 							<option value="mimico">📦 Cofre Mímico</option>
 							<option value="cubo">🟩 Cubo Gelatinoso</option>
 							<option value="troll">🧌 Troll</option>
+							<option value="basilisco">🦎 Basilisco</option>
 						</optgroup>
 						<optgroup label="🐉 Jefes y Aberraciones">
 							<option value="contemplador">👁️ Contemplador</option>
@@ -69,174 +68,175 @@
 							<option value="dragon">🐉 Dragón</option>
 						</optgroup>
 					</select>
-					<input type="text" id="hero_name" class="vtt-input" style="width:105px" placeholder="Nombre (opc.)" title="Nombre personalizado en la ficha">
-					<button id="add-hero" class="btn btn-token" type="button" title="Invocar ficha SVG de la clase seleccionada en el centro del mapa">➕ Invocar</button>
+					<input type="text" id="hero_name" class="vtt-input" style="width:88px" placeholder="Nombre..." title="Nombre personalizado en la ficha">
+					<button id="add-hero" class="btn btn-token" type="button" title="Invocar ficha en el tablero">➕ Invocar</button>
+					<span class="toolbar-sep"></span>
+					<button id="add-line" class="btn btn-attack" type="button" title="Añadir línea de ataque dirigida">⚔️ Ataque</button>
+					<button id="add-rectangle" class="btn btn-defense" type="button" title="Añadir acción de defensa / poción">🛡️ Defensa</button>
 				</div>
 
+				<!-- GRUPO 2: MAGIA (ÁREAS AOE Y PERGAMINOS) -->
 				<div class="toolbar-group">
-					<span class="group-label">Acciones</span>
-					<button id="add-line" class="btn btn-attack" type="button" title="Añadir línea de ataque / acción dirigida">⚔️ Ataque</button>
-					<button id="add-rectangle" class="btn btn-defense" type="button" title="Añadir etiqueta de defensa o reacción">🛡️ Defensa</button>
-				</div>
-
-				<div class="toolbar-group">
-					<span class="group-label">Áreas de Conjuro (AoE)</span>
+					<span class="group-label">Magia</span>
 					<select id="sel_aoe" class="vtt-select" title="Tipo y radio del área de efecto">
-						<option value="300|#ef4444|🔥 Bola de Fuego (6 m)">🔥 Bola de Fuego (6 m)</option>
-						<option value="225|#38bdf8|❄️ Explosión Helada (4,5 m)">❄️ Explosión Helada (4,5 m)</option>
-						<option value="150|#a855f7|✨ Aura Mágica (3 m)">✨ Aura Mágica (3 m)</option>
-						<option value="225|#22c55e|☠️ Nube Venenosa (4,5 m)">☠️ Nube Venenosa (4,5 m)</option>
-						<option value="375|#eab308|☀️ Luz Sagrada (7,5 m)">☀️ Luz Sagrada (7,5 m)</option>
+						<option value="150|#ef4444|🔥 Bola de Fuego (3 m)">🔥 Bola de Fuego (3 m)</option>
+						<option value="112|#38bdf8|❄️ Explosión Helada (2,25 m)">❄️ Explosión Helada (2,25 m)</option>
+						<option value="75|#a855f7|✨ Aura Mágica (1,5 m)">✨ Aura Mágica (1,5 m)</option>
+						<option value="112|#22c55e|☠️ Nube Venenosa (2,25 m)">☠️ Nube Venenosa (2,25 m)</option>
+						<option value="188|#eab308|☀️ Luz Sagrada (3,75 m)">☀️ Luz Sagrada (3,75 m)</option>
 					</select>
-					<button id="add-aoe" class="btn btn-magic" type="button" title="Invocar área de efecto en el mapa">✨ Área</button>
+					<button id="add-aoe" class="btn btn-magic" type="button" title="Invocar área de conjuro">✨ Área</button>
+					<span class="toolbar-sep"></span>
+					<select id="sel_scroll" class="vtt-select" title="Pergamino activo al elegir 'Pergamino mágico' en Ataque o Defensa">
+						<option value="Proyectil Mágico">📜 Proyectil Mágico</option>
+						<option value="Rayo Relampagueante">📜 Rayo Relampagueante</option>
+						<option value="Dormir">📜 Dormir</option>
+						<option value="Inmovilizar Persona">📜 Inmovilizar Persona</option>
+						<option value="Desintegrar">📜 Desintegrar</option>
+						<option value="Escudo Arcano">📜 Escudo Arcano</option>
+						<option value="Paso Brumoso">📜 Paso Brumoso</option>
+						<option value="Contrahechizo">📜 Contrahechizo</option>
+						<option value="Piel Robliza">📜 Piel Robliza</option>
+						<option value="Restauración Mayor">📜 Restauración Mayor</option>
+						<option value="Revivir">📜 Revivir</option>
+						<option value="Teletransporte">📜 Teletransporte</option>
+					</select>
+					<input type="text" id="new_scroll_name" class="vtt-input" placeholder="+ Pergamino..." style="width:92px" title="Añadir nuevo pergamino a la lista">
+					<button id="add-scroll" class="btn btn-secondary" type="button" title="Añadir pergamino">➕</button>
 				</div>
 
+				<!-- GRUPO 3: TABLERO -->
 				<div class="toolbar-group">
-					<span class="group-label">Tablero</span>
-					<button id="toggle-grid" class="btn btn-secondary active" type="button" title="Mostrar/Ocultar cuadrícula táctica (1,5 metros por casilla)">📏 Rejilla</button>
+					<button id="toggle-grid" class="btn btn-secondary active" type="button" title="Mostrar/Ocultar cuadrícula táctica (1,5 m por casilla)">📏 Rejilla</button>
 					<button id="clear-board" class="btn btn-danger" type="button" title="Limpiar todos los elementos del tablero">🗑️ Limpiar</button>
-				</div>
-
-				<div class="toolbar-group template-bar">
-					<span class="group-label">Guardar Escena</span>
-					<input type="text" id="name_template" class="vtt-input" value="" placeholder="Nombre de plantilla...">
-					<button id="save-template" class="btn btn-gold" type="button">💾 Salvar Plantilla</button>
 				</div>
 			</div>
 		</header>
 
 		<!-- CONTENEDOR PRINCIPAL -->
 		<div class="vtt-workspace">
-			<!-- PANEL LATERAL IZQUIERDO: RECURSOS Y CONTROLES D&D -->
+			<!-- PANEL LATERAL IZQUIERDO COMPACTO -->
 			<aside class="vtt-sidebar">
-				<!-- SECCIÓN ESCENARIO Y PLANTILLAS -->
+				<!-- TARJETA 1: ESCENARIO, PLANTILLAS Y CONSTRUCTOR DE MAPAS -->
 				<section class="vtt-card">
-					<h2 class="card-title">🗺️ Escenario y Biblioteca</h2>
-
-					<div class="form-row">
-						<label for="sel_background">Imagen de Fondo (Dungeon)</label>
-						<select id="sel_background" name="sel_background" class="vtt-select">
-							<option value="..">-- Seleccionar --</option>
-						</select>
-					</div>
-
-					<div class="form-row">
-						<label for="sel_plantilla">Plantillas Guardadas</label>
-						<select id="sel_plantilla" name="sel_plantilla" class="vtt-select">
-							<option value="..">-- Cargar partida --</option>
-						</select>
-					</div>
-				</section>
-
-				<!-- SECCIÓN EDITOR DE MAPAS Y GEOMETRÍA -->
-				<section class="vtt-card">
-					<h2 class="card-title">🧱 Constructor de Mapas</h2>
-					<div class="form-row">
-						<label>Fondo Liso (o Imagen)</label>
-						<div class="bg-palette">
-							<button type="button" class="swatch-btn swatch-img" data-bg="" title="Usar imagen de mapa">🖼️</button>
-							<button type="button" class="swatch-btn" data-bg="#1e242b" style="background:#1e242b" title="Piedra de Mazmorra"></button>
-							<button type="button" class="swatch-btn" data-bg="#0b0d13" style="background:#0b0d13" title="Abismo / Cueva Oscura"></button>
-							<button type="button" class="swatch-btn" data-bg="#1f3a24" style="background:#1f3a24" title="Bosque / Hierba"></button>
-							<button type="button" class="swatch-btn" data-bg="#6b5438" style="background:#6b5438" title="Tierra / Taberna"></button>
-							<button type="button" class="swatch-btn" data-bg="#9a835a" style="background:#9a835a" title="Arena / Pergamino"></button>
-							<button type="button" class="swatch-btn" data-bg="#153243" style="background:#153243" title="Agua Profunda"></button>
-							<button type="button" class="swatch-btn" data-bg="#3b1212" style="background:#3b1212" title="Infierno / Lava"></button>
-							<input type="color" id="bg-custom-color" value="#1e242b" class="color-picker-sm" title="Color de fondo personalizado">
-						</div>
-					</div>
-					<div class="form-row" style="margin-top:8px">
-						<label>Añadir Figura (Vértices / Rueda del ratón)</label>
-						<div class="shape-options-row">
-							<input type="color" id="shape-color" value="#cbd5e1" class="color-picker-sm" title="Color de la figura">
-							<select id="shape-fill-mode" class="vtt-select" style="flex:1">
-								<option value="hollow">🔲 Hueco (Muro/Sala)</option>
-								<option value="filled">⬛ Relleno Sólido</option>
+					<h2 class="card-title">🗺️ Mapa y Escenario</h2>
+					<div class="compact-grid-2">
+						<div>
+							<label class="tiny-label" for="sel_background">Fondo</label>
+							<select id="sel_background" name="sel_background" class="vtt-select w-full">
+								<option value="..">-- Mapa --</option>
 							</select>
 						</div>
-						<div class="shape-btn-row">
-							<button type="button" class="btn btn-secondary btn-sm add-map-shape" data-shape="square" title="Cuadrado (1 celda): estira vértices, rota o usa la rueda del ratón">▭ Cuadrado</button>
-							<button type="button" class="btn btn-secondary btn-sm add-map-shape" data-shape="trapezoid" title="Trapecio (1 celda): estira vértices, rota o usa la rueda del ratón">⏢ Trapecio</button>
-							<button type="button" class="btn btn-secondary btn-sm add-map-shape" data-shape="triangle" title="Triángulo (1 celda): estira vértices, rota o usa la rueda del ratón">△ Triángulo</button>
-							<button type="button" class="btn btn-secondary btn-sm add-map-shape" data-shape="circle" title="Círculo (1 celda): usa la rueda del ratón para escalar">◯ Círculo</button>
-							<button type="button" class="btn btn-secondary btn-sm add-map-shape" data-shape="semicircle" title="Semicírculo (1 celda): 3 puntos para estirar base/arco y rueda del ratón">◗ Semicírculo</button>
-							<button type="button" class="btn btn-secondary btn-sm add-map-shape" data-shape="ellipse" title="Elipse (1 celda): 4 puntos para estirar y rueda del ratón">⬭ Elipse</button>
+						<div>
+							<label class="tiny-label" for="sel_plantilla">Partida</label>
+							<select id="sel_plantilla" name="sel_plantilla" class="vtt-select w-full">
+								<option value="..">-- Cargar --</option>
+							</select>
 						</div>
 					</div>
-				</section>
 
-				<!-- SECCIÓN LANZADOR DE DADOS D&D -->
-				<section class="vtt-card">
-					<h2 class="card-title">🎲 Lanzador de Dados</h2>
-					<div class="dice-controls">
-						<div class="dice-mod-row">
-							<label for="dice-qty">Cant.</label>
-							<input type="number" id="dice-qty" class="vtt-input input-sm" value="1" min="1" max="20">
-							<label for="dice-mod">Mod.</label>
-							<input type="number" id="dice-mod" class="vtt-input input-sm" value="0" min="-20" max="50">
-						</div>
-						<div class="dice-grid">
-							<button type="button" class="btn-die" data-sides="4">d4</button>
-							<button type="button" class="btn-die" data-sides="6">d6</button>
-							<button type="button" class="btn-die" data-sides="8">d8</button>
-							<button type="button" class="btn-die" data-sides="10">d10</button>
-							<button type="button" class="btn-die" data-sides="12">d12</button>
-							<button type="button" class="btn-die btn-d20" data-sides="20">d20</button>
-							<button type="button" class="btn-die" data-sides="100">d100</button>
-						</div>
-						<div id="dice-result-banner" class="dice-result-banner">
-							Pulsa un dado para lanzar...
-						</div>
+					<div class="bg-palette" style="margin-top:6px">
+						<button type="button" class="swatch-btn swatch-img" data-bg="" title="Usar imagen de mapa">🖼️</button>
+						<button type="button" class="swatch-btn" data-bg="#1e242b" style="background:#1e242b" title="Piedra de Mazmorra"></button>
+						<button type="button" class="swatch-btn" data-bg="#0b0d13" style="background:#0b0d13" title="Abismo / Cueva Oscura"></button>
+						<button type="button" class="swatch-btn" data-bg="#1f3a24" style="background:#1f3a24" title="Bosque / Hierba"></button>
+						<button type="button" class="swatch-btn" data-bg="#6b5438" style="background:#6b5438" title="Tierra / Taberna"></button>
+						<button type="button" class="swatch-btn" data-bg="#9a835a" style="background:#9a835a" title="Arena / Pergamino"></button>
+						<button type="button" class="swatch-btn" data-bg="#153243" style="background:#153243" title="Agua Profunda"></button>
+						<button type="button" class="swatch-btn" data-bg="#3b1212" style="background:#3b1212" title="Infierno / Lava"></button>
+						<input type="color" id="bg-custom-color" value="#1e242b" class="color-picker-sm" title="Color de fondo personalizado">
 					</div>
+
+					<div class="shape-options-row" style="margin-top:6px">
+						<input type="color" id="shape-color" value="#cbd5e1" class="color-picker-sm" title="Color de la figura">
+						<select id="shape-fill-mode" class="vtt-select" style="flex:1">
+							<option value="hollow">🔲 Hueco (Sala/Muro)</option>
+							<option value="filled">⬛ Relleno Sólido</option>
+						</select>
+					</div>
+					<div class="shape-btn-row">
+						<button type="button" class="btn btn-secondary btn-xs add-map-shape" data-shape="square" title="Cuadrado (rueda para escalar)">▭ Cuad.</button>
+						<button type="button" class="btn btn-secondary btn-xs add-map-shape" data-shape="trapezoid" title="Trapecio (rueda para escalar)">⏢ Trap.</button>
+						<button type="button" class="btn btn-secondary btn-xs add-map-shape" data-shape="triangle" title="Triángulo (rueda para escalar)">△ Triáng.</button>
+						<button type="button" class="btn btn-secondary btn-xs add-map-shape" data-shape="circle" title="Círculo (rueda para escalar)">◯ Círc.</button>
+						<button type="button" class="btn btn-secondary btn-xs add-map-shape" data-shape="semicircle" title="Semicírculo (rueda para escalar)">◗ Semic.</button>
+						<button type="button" class="btn btn-secondary btn-xs add-map-shape" data-shape="ellipse" title="Elipse (rueda para escalar)">⬭ Elipse</button>
+					</div>
+
+					<details class="compact-details">
+						<summary>💾 Guardar escena / 📤 Subir mapa</summary>
+						<div class="details-body">
+							<div class="file-row" style="margin-bottom:5px">
+								<input type="text" id="name_template" class="vtt-input" style="flex:1;min-width:0" value="" placeholder="Nombre plantilla...">
+								<button id="save-template" class="btn btn-gold btn-xs" type="button">💾 Salvar</button>
+							</div>
+							<form id="background" name="background" action="" method="post" enctype="multipart/form-data" class="upload-form">
+								<div class="file-row">
+									<input type="file" name="back" id="back" class="vtt-file" title="Mapa 1250x975 px"/>
+									<input type="submit" value="📤 Subir" class="btn btn-secondary btn-xs"/>
+								</div>
+							</form>
+						</div>
+					</details>
 				</section>
 
-				<!-- SECCIÓN ORDEN DE INICIATIVA Y HP -->
+				<!-- TARJETA 2: LANZADOR DE DADOS COMPACTO -->
 				<section class="vtt-card">
 					<div class="card-header-flex">
-						<h2 class="card-title">⚡ Orden de Iniciativa</h2>
+						<h2 class="card-title">🎲 Dados</h2>
+						<div class="dice-mod-inline">
+							<span>Cant</span>
+							<input type="number" id="dice-qty" class="vtt-input input-xxs" value="1" min="1" max="20">
+							<span>Mod</span>
+							<input type="number" id="dice-mod" class="vtt-input input-xxs" value="0" min="-20" max="50">
+						</div>
+					</div>
+					<div class="dice-grid">
+						<button type="button" class="btn-die" data-sides="4">d4</button>
+						<button type="button" class="btn-die" data-sides="6">d6</button>
+						<button type="button" class="btn-die" data-sides="8">d8</button>
+						<button type="button" class="btn-die" data-sides="10">d10</button>
+						<button type="button" class="btn-die" data-sides="12">d12</button>
+						<button type="button" class="btn-die btn-d20" data-sides="20">d20</button>
+						<button type="button" class="btn-die" data-sides="100">d%</button>
+					</div>
+					<div id="dice-result-banner" class="dice-result-banner">
+						Pulsa un dado para lanzar...
+					</div>
+				</section>
+
+				<!-- TARJETA 3: INICIATIVA Y CRÓNICA UNIFICADAS -->
+				<section class="vtt-card">
+					<div class="card-header-flex">
+						<h2 class="card-title">⚡ Iniciativa y HP</h2>
 						<span id="round-counter" class="badge-round">Ronda 1</span>
 					</div>
 					<div class="init-add-row">
 						<input type="text" id="init-name" class="vtt-input" placeholder="Nombre">
-						<input type="number" id="init-val" class="vtt-input input-xs" placeholder="Ini" title="Iniciativa">
-						<input type="number" id="init-hp" class="vtt-input input-xs" placeholder="HP" title="Puntos de Golpe (HP)">
-						<button type="button" id="add-init" class="btn btn-gold btn-sm" title="Añadir al combate">+</button>
+						<input type="number" id="init-val" class="vtt-input input-xxs" placeholder="Ini" title="Iniciativa">
+						<input type="number" id="init-hp" class="vtt-input input-xxs" placeholder="HP" title="Puntos de Golpe (HP)">
+						<button type="button" id="add-init" class="btn btn-gold btn-xs" title="Añadir al combate">+</button>
 					</div>
 					<ul id="init-list" class="init-list"></ul>
 					<div class="init-actions">
-						<button type="button" id="next-turn" class="btn btn-secondary btn-sm">▶ Siguiente Turno</button>
-						<button type="button" id="clear-init" class="btn btn-danger btn-sm">Reiniciar</button>
+						<button type="button" id="next-turn" class="btn btn-secondary btn-xs" style="flex:1">▶ Sig. Turno</button>
+						<button type="button" id="clear-init" class="btn btn-danger btn-xs">Reiniciar</button>
 					</div>
-				</section>
 
-				<!-- SECCIÓN SUBIDA DE ARCHIVOS -->
-				<section class="vtt-card">
-					<h2 class="card-title">📤 Subir Mapa de Dungeon</h2>
-					<form id="background" name="background" action="" method="post" enctype="multipart/form-data" class="upload-form">
-						<label>⚠️ El mapa debe ser de <b>1250 × 975 px</b> (proporción 50:39)</label>
-						<div class="file-row">
-							<input type="file" name="back" id="back" class="vtt-file"/>
-							<input type="submit" value="Subir" class="btn btn-secondary btn-sm"/>
-						</div>
-					</form>
-				</section>
-
-				<!-- REGISTRO DE COMBATE (COMBAT LOG) -->
-				<section class="vtt-card">
-					<h2 class="card-title">📜 Crónica de Combate</h2>
+					<h2 class="card-title" style="margin-top:8px">📜 Crónica de Combate</h2>
 					<div id="combat-log" class="combat-log">
 						<div class="log-entry">Bienvenido a RoleDesk. ¡Que comience la aventura!</div>
 					</div>
 				</section>
 			</aside>
 
-			<!-- ÁREA CENTRAL: TABLERO DEL DUNGEON -->
+			<!-- ÁREA CENTRAL: TABLERO DEL DUNGEON PROTAGONISTA -->
 			<main class="vtt-stage">
-				<div class="stage-hint">
-					<span>📐 Mapa: <b>1250 × 975 px</b> (Rejilla 16×13 casillas de <b>1,5 m</b>) · 💡 <b>Arrastra</b> para mover · <b>Doble clic</b> para borrar</span>
-				</div>
 				<div class="canvas-wrapper">
 					<div id="marco"></div>
+				</div>
+				<div class="stage-hint">
+					<span>📐 <b>1250 × 975 px</b> (16×13 celdas de <b>1,5 m</b>) · 💡 <b>Clic/Arrastrar</b>: traer al frente y mover · <b>Punto naranja</b>: girar · <b>Rueda</b>: escalar figuras · <b>Doble clic</b>: borrar</span>
 				</div>
 			</main>
 		</div>
