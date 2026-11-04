@@ -76,7 +76,9 @@ $(document).ready(function() {
 	var cline = 0;
 	var abox = 0;
 	var imagen = 0;
+	var enemyCounts = {};
 	var aoeCount = 0;
+	var mapShapeCount = 0;
 	var gridVisible = true;
 	var svgCnv;
 	
@@ -99,6 +101,7 @@ $(document).ready(function() {
 	$("#sel_background").on("change", function() {
 		var backimage = $(this).val();
 		if (backimage !== ".." && backimage != "") {
+			svgCnv.setBackgroundColor('');
 			$('#svg-edit').css('background-image','url(images/background/'+backimage+')');
 			addLog('Mapa cambiado a <b>' + backimage + '</b>');
 		}
@@ -192,6 +195,9 @@ $(document).ready(function() {
         		else if (group.id.startsWith('D')) {
         			aoeCount+=1;
         		}
+        		else if (group.id.startsWith('M')) {
+        			mapShapeCount+=1;
+        		}
         	});
         	addLog('Plantilla cargada: <b>' + template_name + '</b>');
         });
@@ -262,7 +268,15 @@ $(document).ready(function() {
 		var cleanClassName = $.trim(classLabel.replace(/^[^\wÁÉÍÓÚáéíóúÑñ]+/, ''));
 		var customName = $.trim($("#hero_name").val());
 		var stats = DEFAULT_STATS[classKey] || { hp: 20, mod: 0, isEnemy: false };
-		var finalName = customName ? customName : (stats.isEnemy ? (cleanClassName + ' #' + imagen) : cleanClassName);
+		var finalName;
+		if (customName) {
+			finalName = customName;
+		} else if (stats.isEnemy) {
+			enemyCounts[classKey] = (enemyCounts[classKey] || 0) + 1;
+			finalName = cleanClassName + ' ' + enemyCounts[classKey];
+		} else {
+			finalName = cleanClassName;
+		}
 
 		svgCnv.heroToken(imagen, classKey, finalName);
 		$("#hero_name").val('');
@@ -287,6 +301,36 @@ $(document).ready(function() {
 		addLog('Invocada <b>' + label + '</b> en el tablero.');
 	});
 
+	// CONSTRUCTOR DE MAPAS (PALETA DE FONDO Y FIGURAS BÁSICAS)
+	$(".swatch-btn").on("click", function() {
+		$(".swatch-btn").removeClass("active");
+		$(this).addClass("active");
+		var bgColor = $(this).attr("data-bg");
+		svgCnv.setBackgroundColor(bgColor);
+		if (bgColor) {
+			$("#bg-custom-color").val(bgColor);
+			addLog('Fondo del mapa cambiado a color <b>' + bgColor + '</b>.');
+		} else {
+			addLog('Restaurada imagen de mapa de fondo.');
+		}
+	});
+
+	$("#bg-custom-color").on("input change", function() {
+		var bgColor = $(this).val();
+		$(".swatch-btn").removeClass("active");
+		svgCnv.setBackgroundColor(bgColor);
+	});
+
+	$(".add-map-shape").on("click", function() {
+		mapShapeCount += 1;
+		var shapeType = $(this).attr("data-shape") || "square";
+		var colorVal = $("#shape-color").val() || "#cbd5e1";
+		var isFilled = ($("#shape-fill-mode").val() === "filled");
+		svgCnv.mapShape(mapShapeCount, shapeType, colorVal, isFilled);
+		var shapeNames = { square: "Cuadrado", trapezoid: "Trapecio", triangle: "Triángulo", circle: "Círculo", semicircle: "Semicírculo", ellipse: "Elipse" };
+		addLog('Añadida figura de mapa: <b>' + (shapeNames[shapeType] || shapeType) + '</b> (' + (isFilled ? 'Relleno' : 'Hueco') + ').');
+	});
+
 	// CUADRÍCULA TÁCTICA D&D
 	$("#toggle-grid").on("click", function() {
 		gridVisible = !gridVisible;
@@ -299,13 +343,19 @@ $(document).ready(function() {
 		if (!confirm("¿Seguro que deseas eliminar todos los elementos del tablero actual?")) return;
 		$("g").each(function() {
 			var group = this;
-			if (group.id.indexOf('A') !== -1 && group.firstChild && group.firstChild.points) {
-				svgCnv.removeNodes(group.firstChild.points.numberOfItems, group.firstChild.id);
+			if ((group.id.indexOf('A') !== -1 || group.id.indexOf('M') === 0) && group.firstChild) {
+				var nItems = group.firstChild.points ? group.firstChild.points.numberOfItems : (group.firstChild.nodeName === 'ellipse' ? 4 : (group.firstChild.nodeName === 'path' ? 5 : 0));
+				if (nItems > 0) svgCnv.removeNodes(nItems, group.firstChild.id);
 				var rotNode = document.getElementById(group.firstChild.id + 'rot');
 				if (rotNode) svgCnv.removeChild(rotNode);
 			}
 			if (group.parentNode) group.parentNode.removeChild(group);
 		});
+		enemyCounts = {};
+		combatants = [];
+		currentTurnIndex = 0;
+		currentRound = 1;
+		renderInitiative();
 		addLog('Tablero limpiado.');
 	});
 

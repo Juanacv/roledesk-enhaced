@@ -8,9 +8,9 @@
 		<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 		<script type="text/javascript" src="js/interact.js"></script>
 		<script src="http://code.jquery.com/jquery-1.10.1.min.js"></script>
-		<script type="text/javascript" src="js/SVGCanvas.js?v=15"></script>
-		<script type="text/javascript" src="js/main.js?v=15"></script>
-		<link rel="stylesheet" href="css/star.css?v=15" type="text/css"/>
+		<script type="text/javascript" src="js/SVGCanvas.js?v=29"></script>
+		<script type="text/javascript" src="js/main.js?v=29"></script>
+		<link rel="stylesheet" href="css/star.css?v=29" type="text/css"/>
 	</head>
 	<body>
 		<!-- CABECERA Y BARRA DE ACCIONES RÁPIDAS -->
@@ -125,6 +125,43 @@
 						<select id="sel_plantilla" name="sel_plantilla" class="vtt-select">
 							<option value="..">-- Cargar partida --</option>
 						</select>
+					</div>
+				</section>
+
+				<!-- SECCIÓN EDITOR DE MAPAS Y GEOMETRÍA -->
+				<section class="vtt-card">
+					<h2 class="card-title">🧱 Constructor de Mapas</h2>
+					<div class="form-row">
+						<label>Fondo Liso (o Imagen)</label>
+						<div class="bg-palette">
+							<button type="button" class="swatch-btn swatch-img" data-bg="" title="Usar imagen de mapa">🖼️</button>
+							<button type="button" class="swatch-btn" data-bg="#1e242b" style="background:#1e242b" title="Piedra de Mazmorra"></button>
+							<button type="button" class="swatch-btn" data-bg="#0b0d13" style="background:#0b0d13" title="Abismo / Cueva Oscura"></button>
+							<button type="button" class="swatch-btn" data-bg="#1f3a24" style="background:#1f3a24" title="Bosque / Hierba"></button>
+							<button type="button" class="swatch-btn" data-bg="#6b5438" style="background:#6b5438" title="Tierra / Taberna"></button>
+							<button type="button" class="swatch-btn" data-bg="#9a835a" style="background:#9a835a" title="Arena / Pergamino"></button>
+							<button type="button" class="swatch-btn" data-bg="#153243" style="background:#153243" title="Agua Profunda"></button>
+							<button type="button" class="swatch-btn" data-bg="#3b1212" style="background:#3b1212" title="Infierno / Lava"></button>
+							<input type="color" id="bg-custom-color" value="#1e242b" class="color-picker-sm" title="Color de fondo personalizado">
+						</div>
+					</div>
+					<div class="form-row" style="margin-top:8px">
+						<label>Añadir Figura (Vértices / Rueda del ratón)</label>
+						<div class="shape-options-row">
+							<input type="color" id="shape-color" value="#cbd5e1" class="color-picker-sm" title="Color de la figura">
+							<select id="shape-fill-mode" class="vtt-select" style="flex:1">
+								<option value="hollow">🔲 Hueco (Muro/Sala)</option>
+								<option value="filled">⬛ Relleno Sólido</option>
+							</select>
+						</div>
+						<div class="shape-btn-row">
+							<button type="button" class="btn btn-secondary btn-sm add-map-shape" data-shape="square" title="Cuadrado (1 celda): estira vértices, rota o usa la rueda del ratón">▭ Cuadrado</button>
+							<button type="button" class="btn btn-secondary btn-sm add-map-shape" data-shape="trapezoid" title="Trapecio (1 celda): estira vértices, rota o usa la rueda del ratón">⏢ Trapecio</button>
+							<button type="button" class="btn btn-secondary btn-sm add-map-shape" data-shape="triangle" title="Triángulo (1 celda): estira vértices, rota o usa la rueda del ratón">△ Triángulo</button>
+							<button type="button" class="btn btn-secondary btn-sm add-map-shape" data-shape="circle" title="Círculo (1 celda): usa la rueda del ratón para escalar">◯ Círculo</button>
+							<button type="button" class="btn btn-secondary btn-sm add-map-shape" data-shape="semicircle" title="Semicírculo (1 celda): 3 puntos para estirar base/arco y rueda del ratón">◗ Semicírculo</button>
+							<button type="button" class="btn btn-secondary btn-sm add-map-shape" data-shape="ellipse" title="Elipse (1 celda): 4 puntos para estirar y rueda del ratón">⬭ Elipse</button>
+						</div>
 					</div>
 				</section>
 
