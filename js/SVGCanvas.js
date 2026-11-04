@@ -1009,7 +1009,7 @@ function SVGCanvas(interact, width, height, flexiName, analogName, gifName, id, 
                 ]
             },
             lobo: {
-                name: 'Lobo / Huargo', bg: '#1f2937', border: '#94a3b8',
+                name: 'Lobo Huargo', bg: '#1f2937', border: '#94a3b8',
                 paths: [
                     { d: 'M -13 -16 L -7 -5 L 7 -5 L 13 -16 L 14 2 L 0 15 L -14 2 Z', fill: '#475569', stroke: '#cbd5e1', sw: 1.8 },
                     { d: 'M -6 0 L -2 2 M 6 0 L 2 2 M -3 10 L 3 10', fill: 'none', stroke: '#facc15', sw: 2.2 }
@@ -1024,7 +1024,7 @@ function SVGCanvas(interact, width, height, flexiName, analogName, gifName, id, 
                 ]
             },
             mimico: {
-                name: 'Mímico', bg: '#451a03', border: '#f59e0b',
+                name: 'Cofre Mímico', bg: '#451a03', border: '#f59e0b',
                 paths: [
                     { d: 'M -14 -10 L 14 -10 L 14 10 L -14 10 Z', fill: '#78350f', stroke: '#fbbf24', sw: 2 },
                     { d: 'M -14 0 L 14 0', fill: 'none', stroke: '#1c1917', sw: 3 },
@@ -1041,7 +1041,7 @@ function SVGCanvas(interact, width, height, flexiName, analogName, gifName, id, 
                 ]
             },
             troll: {
-                name: 'Ogro / Troll', bg: '#365314', border: '#f97316',
+                name: 'Troll', bg: '#365314', border: '#f97316',
                 paths: [
                     { d: 'M -14 -8 A 14 12 0 1 1 14 -8 L 12 12 L -12 12 Z', fill: '#4d7c0f', stroke: '#fdba74', sw: 2 },
                     { d: 'M -2 -3 L 0 4 L 2 -3', fill: '#fb923c', stroke: '#9a3412', sw: 1.2 },
@@ -1081,7 +1081,7 @@ function SVGCanvas(interact, width, height, flexiName, analogName, gifName, id, 
                 ]
             },
             dragon: {
-                name: 'Dragón / Jefe', bg: '#450a0a', border: '#f59e0b',
+                name: 'Dragón', bg: '#450a0a', border: '#f59e0b',
                 paths: [
                     { d: 'M -16 -15 L -8 -4 L -15 6 L 0 16 L 15 6 L 8 -4 L 16 -15 L 5 -8 L 0 -14 L -5 -8 Z', fill: '#dc2626', stroke: '#fde047', sw: 2 }
                 ]
@@ -1133,7 +1133,8 @@ function SVGCanvas(interact, width, height, flexiName, analogName, gifName, id, 
                     groupSVG.appendChild(iconPath);
                 });
 
-                var badgeBg = rect(cx - 36, cy + 21, 72, 16, "#0b0d13", "0.92", preset.border, "1.2", id + 'bbg');
+                var badgeWidth = Math.max(88, displayTitle.length * 6.8 + 14);
+                var badgeBg = rect(cx - (badgeWidth / 2), cy + 21, badgeWidth, 18, "#0b0d13", "0.92", preset.border, "1.2", id + 'bbg');
                 badgeBg.setAttributeNS(null, "rx", "4");
                 badgeBg.setAttributeNS(null, "ry", "4");
                 badgeBg.setAttribute('class', id);
@@ -1142,7 +1143,7 @@ function SVGCanvas(interact, width, height, flexiName, analogName, gifName, id, 
 
                 var nameTxt = text(id + 'ntxt');
                 nameTxt.setAttribute('x', cx);
-                nameTxt.setAttribute('y', cy + 32);
+                nameTxt.setAttribute('y', cy + 33.5);
                 nameTxt.setAttribute('text-anchor', 'middle');
                 nameTxt.setAttribute('fill', '#f8fafc');
                 nameTxt.setAttribute('font-size', '10.5');
